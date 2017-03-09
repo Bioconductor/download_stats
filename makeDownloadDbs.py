@@ -577,6 +577,7 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
 
 def makeDownloadDbForYear(year, force=False):
     dbfile_path = 'download_db_' + str(year) + '.sqlite'
+    dbfile_path = os.path.join('download_dbs', dbfile_path)
     if os.path.exists(dbfile_path) and not force:
         print '%s exists and force=False ==> won\'t remake it' % dbfile_path
         return

@@ -28,6 +28,7 @@ def extractDownloadStatsForYear(year):
     print ''
     wd0 = os.getcwd()
     dbfile_path = 'download_db_' + str(year) + '.sqlite'
+    dbfile_path = os.path.join('download_dbs', dbfile_path)
     conn = stats_utils.SQL_connectToDB(dbfile_path)
     c = conn.cursor()
     if not os.path.exists(biocrepo_dirpath):
