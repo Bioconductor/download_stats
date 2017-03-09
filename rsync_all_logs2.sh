@@ -5,10 +5,10 @@ set -e  # Exit immediately if a simple command exits with a non-zero status
 
 STATS_HOME=/home/biocadmin/STATS
 LOGS_LOCAL_PATH=$STATS_HOME/bioc-access-logs
-#LOGS_REMOTE_PATH=biocadmin@gopher6:/home/server_logs
-LOGS_REMOTE_PATH=biocadmin@rhino01:server_logs
+LOGS_REMOTE_PATH=biocadmin@rhino1:server_logs
 
 cd $LOGS_LOCAL_PATH
+
 echo ""
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "> RETRIEVING SQUID LOG FILES FROM $LOGS_REMOTE_PATH/cobra"
