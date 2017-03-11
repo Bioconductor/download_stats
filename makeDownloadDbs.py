@@ -288,7 +288,10 @@ def get_biocversion(m, lineno, s3, lineobj=None):
 
 def get_package(m, lineno, s3, lineobj=None):
     URL_parts = _get_URL_parts(m, lineno, s3)
-    return URL_parts.group(3)
+    val = URL_parts.group(3)
+    if val.find('%') >= 0:
+        raise BadInputLine("MALFORMED PACKAGE NAME")
+    return val
 
 def get_pkgversion(m, lineno, s3, lineobj=None):
     URL_parts = _get_URL_parts(m, lineno, s3, lineobj)
