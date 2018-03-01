@@ -268,11 +268,11 @@ def get_biocrepo_relurl(m, lineno, s3, lineobj=None):
 
 def getBiocRepo(relurl):
     relurl = relurl.lower()
-    if relurl == '/cran':
+    if not relurl.startswith('/packages/'):
         return None
-    biocrepos = ['annotation', 'experiment', 'extra', 'omegahat', 'monograph', 'lindsey']
+    biocrepos = ['annotation', 'experiment', 'workflows', 'extra', 'omegahat', 'monograph', 'lindsey']
     for biocrepo in biocrepos:
-        if relurl.find(biocrepo) != -1:
+        if relurl.find(biocrepo + '/') != -1:
             return biocrepo
     return 'bioc'
 
