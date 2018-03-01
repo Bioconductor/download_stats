@@ -272,7 +272,7 @@ def getBiocRepo(relurl):
         return None
     biocrepos = ['annotation', 'experiment', 'workflows', 'extra', 'omegahat', 'monograph', 'lindsey']
     for biocrepo in biocrepos:
-        if relurl.find(biocrepo + '/') != -1:
+        if relurl.find(biocrepo) != -1:
             return biocrepo
     return 'bioc'
 
