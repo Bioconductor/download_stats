@@ -800,6 +800,7 @@ def write_HTML_stats_for_year(out, pkg, year):
 def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
                              index_page_href, index_page_title):
     print 'Make download stats HTML report for package %s ...' % pkg,
+    sys.stdout.flush()
     package_page = 'index.html'
     out = open(package_page, 'w')
     biocrepo_label = stats_config.biocrepo2label[biocrepo]
@@ -830,6 +831,7 @@ def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
     out.write('</HTML>\n')
     out.close()
     print 'OK'
+    sys.stdout.flush()
     return
 
 ## So old URLs like https://bioconductor.org/packages/stats/bioc/pathview.html
@@ -859,6 +861,7 @@ def make_biocrepo_HTML_report(biocrepo_page, biocrepo_page_title,
                               biocrepo, from_year, to_year,
                               index_page_href, index_page_title):
     print 'Make download stats HTML report for %s repo ...' % biocrepo,
+    sys.stdout.flush()
     out = open(biocrepo_page, 'w')
     write_top_asHTML(out, biocrepo_page_title, '../main.css')
     out.write('<BODY>\n')
@@ -886,6 +889,7 @@ def make_biocrepo_HTML_report(biocrepo_page, biocrepo_page_title,
     out.write('</HTML>\n')
     out.close()
     print 'OK'
+    sys.stdout.flush()
     return
 
 def make_package_HTML_reports(biocrepo, from_year, to_year,
