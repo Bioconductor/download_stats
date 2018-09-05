@@ -8,14 +8,14 @@ import stats_config
 import stats_utils
 
 html_stats_home = '/home/biocadmin/public_html/stats'
-biocrepo = 'bioc'
-from_year = 2009
+biocrepo = 'workflows'
+from_year = 2017
 to_year = datetime.date.today().year  # current year
 
 biocrepo_subdir = stats_config.biocrepo2subdir[biocrepo]
 biocrepo_label = stats_config.biocrepo2label[biocrepo]
 
-index_page = 'index.html'
+index_page = '%s.html' % biocrepo_subdir
 index_page_title = 'Download stats for Bioconductor %s packages' \
                    % biocrepo_label
 
@@ -31,11 +31,13 @@ def makeDownloadStatsHTML():
     os.chdir(biocrepo_dirpath)
 
     stats_utils.make_package_HTML_reports(biocrepo, from_year, to_year,
-                                          "../../", index_page_title)
+                                          '../../%s' % index_page,
+                                          index_page_title)
 
     stats_utils.make_biocrepo_HTML_report(biocrepo_page, biocrepo_page_title,
                                           biocrepo, from_year, to_year,
-                                          "../", index_page_title)
+                                          '../%s' % index_page,
+                                          index_page_title)
 
     ## ------ Make the index page ------ ##
 
@@ -44,12 +46,12 @@ def makeDownloadStatsHTML():
     out.write('<BODY>\n')
 
     stats_utils.write_topright_links_asHTML(out,
+        'index.html',
+        'Download stats for Bioconductor software packages',
         'data-annotation.html',
         'Download stats for Bioconductor annotation packages',
         'data-experiment.html',
-        'Download stats for Bioconductor experiment packages',
-        'workflows.html',
-        'Download stats for Bioconductor workflow packages')
+        'Download stats for Bioconductor experiment packages')
 
     out.write('<H1 style="text-align: center;">%s</H1>\n' % index_page_title)
     stats_utils.write_timestamp_asHTML(out)
@@ -60,24 +62,19 @@ def makeDownloadStatsHTML():
     out.write('<I>download score</I>, that is, the average number of ')
     out.write('distinct IPs that &ldquo;hit&rdquo; the package each month ')
     out.write('for the last 12 months (not counting the current month). ')
-    out.write('Packages <B>in bold</B> are the default Bioconductor packages ')
-    out.write('(i.e. the BiocInstaller package + the packages that get ')
-    out.write('installed the first time <A HREF="%s">biocLite()</A> is ' % \
-              'http://bioconductor.org/docs/install/')
-    out.write('called with no arguments).')
     out.write('</P>\n')
 
     out.write('<HR>\n')
 
-    ## Top 75.
-    out.write('<H2>%s</H2>\n' % 'Top 75')
+    ## Top 15.
+    #out.write('<H2>%s</H2>\n' % 'Top 15')
+    #
+    #stats_utils.write_HTML_top_packages(out, biocrepo,
+    #                                    allpkg_scores_filename, 15)
+    #
+    #out.write('<HR>\n')
 
-    stats_utils.write_HTML_top_packages(out, biocrepo,
-                                        allpkg_scores_filename, 75)
-
-    out.write('<HR>\n')
-
-    ## All software packages.
+    ## All workflow packages.
     out.write('<H2>All %s packages</H2>' % biocrepo_label)
 
     #out.write('<P style="text-align: center">')

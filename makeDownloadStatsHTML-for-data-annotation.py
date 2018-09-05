@@ -49,7 +49,10 @@ def makeDownloadStatsHTML():
         'index.html',
         'Download stats for Bioconductor software packages',
         'data-experiment.html',
-        'Download stats for Bioconductor experiment packages')
+        'Download stats for Bioconductor experiment packages',
+        'workflows.html',
+        'Download stats for Bioconductor workflow packages')
+
 
     out.write('<H1 style="text-align: center;">%s</H1>\n' % index_page_title)
     stats_utils.write_timestamp_asHTML(out)

@@ -568,13 +568,15 @@ def write_top_asHTML(out, title, css_file):
     out.write('</HEAD>\n')
     return
 
-def write_topright_links_asHTML(out, href1, text1, href2, text2):
+def write_topright_links_asHTML(out, href1, text1, href2, text2, href3, text3):
     out.write('<TABLE style="width: 100%; border-spacing: 0px; ')
     out.write('border-collapse: collapse;"><TR>')
     out.write('<TD style="padding: 0px; text-align: right;">')
     out.write('<I><A HREF="%s">%s</A></I>' % (href1, text1))
     out.write('&nbsp;&nbsp;&nbsp;&nbsp;')
     out.write('<I><A HREF="%s">%s</A></I>' % (href2, text2))
+    out.write('&nbsp;&nbsp;&nbsp;&nbsp;')
+    out.write('<I><A HREF="%s">%s</A></I>' % (href3, text3))
     out.write('</TD>')
     out.write('</TR></TABLE>\n')
     return
@@ -614,7 +616,7 @@ def write_timestamp_asHTML(out):
     return
 
 def get_link_to_package_home(pkg, biocversion):
-    for biocrepo in ['bioc', 'data/annotation', 'data/experiment', 'extra']:
+    for biocrepo in ['bioc', 'data/annotation', 'data/experiment', 'workflows']:
         url = 'http://bioconductor.org/packages/%s/%s/html/%s.html' % \
               (biocversion, biocrepo, pkg)
         try:

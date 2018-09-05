@@ -4,13 +4,15 @@ import datetime
 biocrepo2label = { \
     'bioc': "software", \
     'annotation': "annotation", \
-    'experiment': "experiment" \
+    'experiment': "experiment", \
+    'workflows': "workflow"
 }
 
 biocrepo2subdir = { \
-    'bioc': "bioc",
-    'annotation': "data-annotation",
-    'experiment': "data-experiment"
+    'bioc': "bioc", \
+    'annotation': "data-annotation", \
+    'experiment': "data-experiment", \
+    'workflows': "workflows"
 }
 
 squid_access_logdirs = [os.path.join('bioc-access-logs', 'squid', 'cobra'), os.path.join('bioc-access-logs', 'squid', 'mamba')]
