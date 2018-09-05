@@ -100,7 +100,7 @@ def makeDownloadStatsHTML():
 
     #stats_utils.write_HTML_package_alphabetical_index(out, biocrepo,
     #                                                  allpkg_scores_filename)
-    pkg2score = stats_utils.load_pkg2score(allpkg_scores_filepath)
+    pkg2score = stats_utils.load_pkg2score(allpkg_scores_filename)
     pkgs = pkg2score.keys()
     stats_utils.write_HTML_package_index(out, biocrepo, pkgs, pkg2score)
 
