@@ -47,11 +47,11 @@ def makeDownloadStatsHTML():
 
     stats_utils.write_topright_links_asHTML(out,
         'index.html',
-        'Download stats for Bioconductor software packages',
+        'Bioconductor software packages',
         'data-annotation.html',
-        'Download stats for Bioconductor annotation packages',
+        'Bioconductor annotation packages',
         'data-experiment.html',
-        'Download stats for Bioconductor experiment packages')
+        'Bioconductor experiment packages')
 
     out.write('<H1 style="text-align: center;">%s</H1>\n' % index_page_title)
     stats_utils.write_timestamp_asHTML(out)

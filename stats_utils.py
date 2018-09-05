@@ -572,6 +572,8 @@ def write_topright_links_asHTML(out, href1, text1, href2, text2, href3, text3):
     out.write('<TABLE style="width: 100%; border-spacing: 0px; ')
     out.write('border-collapse: collapse;"><TR>')
     out.write('<TD style="padding: 0px; text-align: right;">')
+    out.write('<I>Download stats for:</I>')
+    out.write('&nbsp;&nbsp;&nbsp;&nbsp;')
     out.write('<I><A HREF="%s">%s</A></I>' % (href1, text1))
     out.write('&nbsp;&nbsp;&nbsp;&nbsp;')
     out.write('<I><A HREF="%s">%s</A></I>' % (href2, text2))
