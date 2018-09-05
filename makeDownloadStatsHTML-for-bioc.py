@@ -21,7 +21,7 @@ index_page_title = 'Download stats for Bioconductor %s packages' \
 
 biocrepo_page = 'index.html'
 biocrepo_page_title = 'Download stats for Bioconductor %s repository' \
-                      % biocrepo_label
+                      % biocrepo_label + ' (all packages combined)'
 
 biocrepo_dirpath = os.path.join(html_stats_home, biocrepo_subdir)
 allpkg_stats_filename = '%s_pkg_stats.tab' % biocrepo

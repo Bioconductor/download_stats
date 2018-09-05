@@ -21,7 +21,7 @@ index_page_title = 'Download stats for Bioconductor %s packages' \
 
 biocrepo_page = 'index.html'
 biocrepo_page_title = 'Download stats for Bioconductor %s repository' \
-                      % biocrepo_label
+                      % biocrepo_label + ' (all packages combined)'
 
 biocrepo_dirpath = os.path.join(html_stats_home, biocrepo_subdir)
 allpkg_stats_filename = '%s_pkg_stats.tab' % biocrepo
@@ -64,7 +64,7 @@ def makeDownloadStatsHTML():
     out.write('for the last 12 months (not counting the current month). ')
     out.write('</P>\n')
 
-    out.write('<HR>\n')
+    #out.write('<HR>\n')
 
     ## Top 15.
     #out.write('<H2>%s</H2>\n' % 'Top 15')
@@ -75,7 +75,7 @@ def makeDownloadStatsHTML():
     #out.write('<HR>\n')
 
     ## All workflow packages.
-    out.write('<H2>All %s packages</H2>' % biocrepo_label)
+    #out.write('<H2>All %s packages</H2>' % biocrepo_label)
 
     #out.write('<P style="text-align: center">')
     out.write('<P>')
@@ -98,8 +98,11 @@ def makeDownloadStatsHTML():
     out.write('<P style="text-align: center"><A HREF="%s">%s</A></P>\n' \
               % (biocrepo_page_href, biocrepo_page_title))
 
-    stats_utils.write_HTML_package_alphabetical_index(out, biocrepo,
-                                                      allpkg_scores_filename)
+    #stats_utils.write_HTML_package_alphabetical_index(out, biocrepo,
+    #                                                  allpkg_scores_filename)
+    pkg2score = stats_utils.load_pkg2score(allpkg_scores_filepath)
+    pkgs = pkg2score.keys()
+    stats_utils.write_HTML_package_index(out, biocrepo, pkgs, pkg2score)
 
     out.write('</BODY>\n')
     out.write('</HTML>\n')
