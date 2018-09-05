@@ -9,7 +9,7 @@ import stats_utils
 
 html_stats_home = '/home/biocadmin/public_html/stats'
 biocrepo = 'workflows'
-from_year = 2017
+from_year = 2015
 to_year = datetime.date.today().year  # current year
 
 biocrepo_subdir = stats_config.biocrepo2subdir[biocrepo]
