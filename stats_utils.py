@@ -572,7 +572,7 @@ def write_topright_links_asHTML(out, href1, text1, href2, text2, href3, text3):
     out.write('<TABLE style="width: 100%; border-spacing: 0px; ')
     out.write('border-collapse: collapse;"><TR>')
     out.write('<TD style="padding: 0px; text-align: right;">')
-    out.write('<I>Download stats for:</I>')
+    out.write('<I>See download stats for:</I>')
     out.write('&nbsp;&nbsp;&nbsp;&nbsp;')
     out.write('<I><A HREF="%s">%s</A></I>' % (href1, text1))
     out.write('&nbsp;&nbsp;&nbsp;&nbsp;')
@@ -823,8 +823,10 @@ def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
     out.write('</P>\n')
     year = to_year
     while year >= from_year:
+        out.write('<HR>\n')
         write_HTML_stats_for_year(out, pkg, year)
         year -= 1
+    out.write('<HR>\n')
     out.write('<P style="text-align: center">')
     out.write('All years in one file:&nbsp;')
     pkg_stats_filepath = '%s_stats.tab' % pkg
