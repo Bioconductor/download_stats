@@ -20,7 +20,7 @@ index_page_title = 'Download stats for Bioconductor %s packages' \
                    % biocrepo_label
 
 biocrepo_page = 'index.html'
-biocrepo_page_title = 'See download stats for Bioconductor %s repository' \
+biocrepo_page_title = 'Download stats for Bioconductor %s repository' \
                       % biocrepo_label + ' (all packages combined)'
 
 biocrepo_dirpath = os.path.join(html_stats_home, biocrepo_subdir)
@@ -96,7 +96,7 @@ def makeDownloadStatsHTML():
 
     biocrepo_page_href = '%s/%s' % (biocrepo_subdir, biocrepo_page)
     out.write('<P style="text-align: center"><A HREF="%s">%s</A></P>\n' \
-              % (biocrepo_page_href, biocrepo_page_title))
+              % (biocrepo_page_href, 'See ' + biocrepo_page_title))
 
     stats_utils.write_HTML_package_alphabetical_index(out, biocrepo,
                                                       allpkg_scores_filename)
