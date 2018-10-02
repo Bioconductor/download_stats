@@ -63,7 +63,7 @@ def makeDownloadStatsHTML():
     out.write('Packages <B>in bold</B> are the default Bioconductor packages ')
     out.write('(i.e. the BiocInstaller package + the packages that get ')
     out.write('installed the first time <A HREF="%s">biocLite()</A> is ' % \
-              'http://bioconductor.org/docs/install/')
+              'https://bioconductor.org/docs/install/')
     out.write('called with no arguments).')
     out.write('</P>\n')
 

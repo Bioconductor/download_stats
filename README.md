@@ -59,7 +59,7 @@ Installation
 
 This will update the online reports at:
 
-  http://bioconductor.org/packages/stats/
+  https://bioconductor.org/packages/stats/
 
 every Tuesday and Friday morning.
 

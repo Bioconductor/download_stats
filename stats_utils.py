@@ -617,20 +617,19 @@ def write_timestamp_asHTML(out):
     out.write('</P>\n')
     return
 
-def get_link_to_package_home(pkg, biocversion):
+def get_url_to_package_home(pkg, biocversion):
     for biocrepo in ['bioc', 'data/annotation', 'data/experiment', 'workflows']:
-        url = 'http://bioconductor.org/packages/%s/%s/html/%s.html' % \
-              (biocversion, biocrepo, pkg)
+        url = '/packages/%s/%s/html/%s.html' % (biocversion, biocrepo, pkg)
         try:
-            urllib2.urlopen(url)
+            urllib2.urlopen('https://bioconductor.org' + url)
         except urllib2.HTTPError:
             continue
         return url
     return None
 
 def write_links_to_package_home(out, pkg):
-    url1 = get_link_to_package_home(pkg, "release")
-    url2 = get_link_to_package_home(pkg, "devel")
+    url1 = get_url_to_package_home(pkg, "release")
+    url2 = get_url_to_package_home(pkg, "devel")
     out.write('<P style="text-align: center;">')
     if url1 == None and url2 == None:
         out.write('Note that <B>%s</B> doesn\'t belong to the ' % pkg)
