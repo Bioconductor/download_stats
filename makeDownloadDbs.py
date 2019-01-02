@@ -476,6 +476,7 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
         else:
             file = open(logfile, 'r')
         print 'Importing log file %s ...' % logfile,
+        sys.stdout.flush()
         nb_imported_lines = nb_rejected_lines = 0
         lineno = 0
         if s3:
@@ -496,6 +497,7 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
         print 'OK'
         print '  %d imported lines / %d rejected lines' \
               % (nb_imported_lines, nb_rejected_lines)
+        sys.stdout.flush()
         file.close()
         total_imported_lines += nb_imported_lines
         total_rejected_lines += nb_rejected_lines
