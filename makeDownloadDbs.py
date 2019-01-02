@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 #
 
-import datetime
 import sys
 import os
+import time
+import datetime
 import sqlite3
 import re
 import gzip
@@ -582,7 +583,9 @@ def makeDownloadDbForYear(year, force=False):
     dbfile_path = 'download_db_' + str(year) + '.sqlite'
     dbfile_path = os.path.join('download_dbs', dbfile_path)
     if os.path.exists(dbfile_path) and not force:
-        print '%s exists and force=False ==> won\'t remake it' % dbfile_path
+        print '%s: %s exists and force=False ==> won\'t remake it' % \
+              (time.asctime(), dbfile_path)
+        sys.stdout.flush()
         return
     trashfile_path = '/dev/null'  # trash_file is really too big these days!
     from_date = datetime.date(year, 1, 1)
