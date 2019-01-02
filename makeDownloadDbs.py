@@ -517,12 +517,13 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     print '- trashfile_path: %s' % trashfile_path
     print ''
     print '==================================================================='
-    print '==================================================================='
+    sys.stdout.flush()
     c = conn.cursor()
     stats_utils.SQL_createAccessLogTable(c)
     total_imported_lines = total_rejected_lines = 0
     print ''
     print '------ START importing Squid logs ------'
+    sys.stdout.flush()
     URL_compiled_regex = SQUID_URL_compiled_regex
     logfiles = stats_utils.getSquidAccessLogFiles(from_date, to_date)
     total = importLogFiles(c, logfiles, trash_file, s3=False)
@@ -533,6 +534,7 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     total_rejected_lines += total[1]
     print ''
     print '------ START importing Apache2 logs ------'
+    sys.stdout.flush()
     URL_compiled_regex = APACHE2_URL_compiled_regex
     logfiles = stats_utils.getApache2AccessLogFiles(from_date, to_date)
     total = importLogFiles(c, logfiles, trash_file, s3=False)
@@ -543,6 +545,7 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     total_rejected_lines += total[1]
     print ''
     print '------ START importing S3 logs ------'
+    sys.stdout.flush()
     URL_compiled_regex = APACHE2_URL_compiled_regex # ok?
     logfiles = stats_utils.getCloudFrontAccessLogFiles(from_date, to_date)
     total = importLogFiles(c, logfiles, trash_file, s3=True)
@@ -554,17 +557,19 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     print ''
     conn.commit()
     print 'Creating index on access_log.ips column ...'
+    sys.stdout.flush()
     c.execute('CREATE INDEX ipsI ON access_log (ips)')
     print 'Creating index on access_log.month_year column ...'
+    sys.stdout.flush()
     c.execute('CREATE INDEX month_yearI ON access_log (month_year)')
     print 'Creating index on access_log.package column ...'
+    sys.stdout.flush()
     c.execute('CREATE INDEX packageI ON access_log (package)')
     conn.commit()
     c.close()
     conn.close()
     trash_file.close()
     print ''
-    print '==================================================================='
     print '==================================================================='
     print 'DONE MAKING DOWNLOAD DB FOR DATES %s TO %s' \
           % (str(from_date), str(to_date))
@@ -578,6 +583,7 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     print '==================================================================='
     print '==================================================================='
     print ''
+    sys.stdout.flush()
 
 def makeDownloadDbForYear(year, force=False):
     dbfile_path = 'download_db_' + str(year) + '.sqlite'
