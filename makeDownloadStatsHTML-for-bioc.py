@@ -60,11 +60,11 @@ def makeDownloadStatsHTML():
     out.write('<I>download score</I>, that is, the average number of ')
     out.write('distinct IPs that &ldquo;hit&rdquo; the package each month ')
     out.write('for the last 12 months (not counting the current month). ')
-    out.write('Packages <B>in bold</B> are the default Bioconductor packages ')
-    out.write('(i.e. the BiocInstaller package + the packages that get ')
-    out.write('installed the first time <A HREF="%s">biocLite()</A> is ' % \
-              'https://bioconductor.org/docs/install/')
-    out.write('called with no arguments).')
+    #out.write('Packages <B>in bold</B> are the default Bioconductor packages ')
+    #out.write('(i.e. the BiocInstaller package + the packages that get ')
+    #out.write('installed the first time <A HREF="%s">biocLite()</A> is ' % \
+    #          'https://bioconductor.org/docs/install/')
+    #out.write('called with no arguments).')
     out.write('</P>\n')
 
     out.write('<HR>\n')

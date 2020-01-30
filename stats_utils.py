@@ -882,8 +882,10 @@ def make_biocrepo_HTML_report(biocrepo_page, biocrepo_page_title,
     out.write('</P>\n')
     year = to_year
     while year >= from_year:
+        out.write('<HR>\n')
         write_HTML_stats_for_year(out, biocrepo, year)
         year -= 1
+    out.write('<HR>\n')
     out.write('<P style="text-align: center">')
     out.write('All years in one file:&nbsp;')
     biocrepo_stats_filepath = '%s_stats.tab' % biocrepo
@@ -934,8 +936,8 @@ def write_HTML_package_index(out, biocrepo, pkgs, pkg2score, n=None):
                 pkgname_html = pkg = pkgs[p]
                 biocrepo_subdir = stats_config.biocrepo2subdir[biocrepo]
                 package_page_href = '%s/%s/' % (biocrepo_subdir, pkg)
-                if pkg in stats_config.bioclite_pkgs:
-                    pkgname_html = '<B>%s</B>' % pkgname_html
+                #if pkg in stats_config.bioclite_pkgs:
+                #    pkgname_html = '<B>%s</B>' % pkgname_html
                 out.write('<TD><A HREF="%s">%s&nbsp;(%d)</A></TD>' % \
                           (package_page_href, pkgname_html, pkg2score[pkg]))
                 out.write('</TR>\n')
