@@ -28,7 +28,7 @@ def getLastMonths(n):
     year0 = today.year
     month0 = today.month - n
     if month0 <= 0:
-        yeardelta = (-month0) / 12 + 1
+        yeardelta = (-month0) // 12 + 1
         year0 -= yeardelta
         month0 += 12 * yeardelta
     lastmonths = []

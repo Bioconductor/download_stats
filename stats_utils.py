@@ -9,9 +9,7 @@ import math
 import matplotlib
 matplotlib.use('agg')
 import pylab
-### urllib.urlopen() doesn't raise an error when the object is not found (HTTP
-### Error 404) but urllib2.urlopen() does (raises an urllib2.HTTPError object)
-import urllib2
+import urllib.request
 
 import stats_config
 
@@ -19,6 +17,15 @@ import stats_config
 #access_logfiles_regex = '^access.log-200[78].*\.gz$'
 #access_logfiles_regex = '^(access(-bioc)?.log-20(08|09|10|11|12).*\.gz|bioconductor-access.log-.*)$'
 access_logfiles_regex = '^(access(-bioc)?.log-20(08|09|10|11|12).*\.gz|bioconductor-access.log.*)$'
+
+def bytes2str(line):
+    if isinstance(line, str):
+        return line
+    try:
+        line = line.decode()  # decode() uses utf-8 encoding by default
+    except UnicodeDecodeError:
+        line = line.decode("iso8859")  # typical Windows encoding
+    return line
 
 ### Follows symlinks (if they are supported).
 def getMatchingFiles(dir=".", regex="", full_names=False, recurse=False,
@@ -77,23 +84,23 @@ def selectLogFilesWithinDates(logfiles, from_date=None, to_date=None):
 
 def get_access_logfiles(fmt, access_logdirs, get_logfiles_fun,
                         from_date=None, to_date=None):
-    print 
-    print "Preparing list of %s access logfiles to process:" % fmt
+    print()
+    print("Preparing list of %s access logfiles to process:" % fmt)
     files = []
     for dir in access_logdirs:
-        print "| Scanning '%s' dir ..." % dir,
+        print("| Scanning '%s' dir ..." % dir, end=' ')
         logfiles = get_logfiles_fun(dir)
-        print "OK"
-        print "| ==> %s %s access logfiles found" % (len(logfiles), fmt)
+        print("OK")
+        print("| ==> %s %s access logfiles found" % (len(logfiles), fmt))
         files.extend(logfiles)
     if from_date != None or to_date != None:
-        print "Total: %s %s access logfiles found" % (len(files), fmt)
-        print "Selecting files with dates within %s and %s ..." \
-              % (from_date, to_date),
+        print("Total: %s %s access logfiles found" % (len(files), fmt))
+        print("Selecting files with dates within %s and %s ..." % \
+              (from_date, to_date), end=' ')
         files = selectLogFilesWithinDates(files, from_date, to_date)
-        print "OK"
-    print "Number of %s access logfiles to process: %s" % (fmt, len(files))
-    files.sort(lambda x, y: cmp(getLogFileDate(x), getLogFileDate(y)))
+        print("OK")
+    print("Number of %s access logfiles to process: %s" % (fmt, len(files)))
+    files.sort(key=lambda x: getLogFileDate(x))
     return files
 
 def getSquidAccessLogFiles(from_date=None, to_date=None):
@@ -159,7 +166,7 @@ access_log_col2type = {
 
 def SQL_createDB(dbfile):
     if os.path.exists(dbfile):
-        print 'Removing existing %s file ...' % dbfile
+        print('Removing existing %s file ...' % dbfile)
         os.remove(dbfile)
     return sqlite3.connect(dbfile)
 
@@ -189,7 +196,7 @@ def SQL_insertRow(c, tablename, col2val):
 
 def SQL_connectToDB(dbfile):
     if not os.path.exists(dbfile):
-        print '%s file not found. Did you run makeDownloadDbs.sh?' % dbfile
+        print('%s file not found. Did you run makeDownloadDbs.sh?' % dbfile)
         sys.exit("==> EXIT")
     return sqlite3.connect(dbfile)
 
@@ -206,7 +213,7 @@ def SQL_getDistinctPackages(c, biocrepo='bioc'):
     pkgs = []
     for row in c:
         pkgs.append(str(row[0]))
-    #pkgs.sort(lambda u, v: cmp(string.lower(u), string.lower(v)))
+    #pkgs.sort(key=lambda x: x.lower())
     return pkgs
 
 def SQL_getDistinctPackages_for_year(c, biocrepo, year):
@@ -216,11 +223,11 @@ def SQL_getDistinctPackages_for_year(c, biocrepo, year):
     pkgs = []
     for row in c:
         pkgs.append(str(row[0]))
-    #pkgs.sort(lambda u, v: cmp(string.lower(u), string.lower(v)))
+    #pkgs.sort(key=lambda x: x.lower())
     return pkgs
 
 def SQL_countDownloadsPerMonth(c, sql_where):
-    print 'Counting downloads-per-month for "%s" ...' % sql_where,
+    print('Counting downloads-per-month for "%s" ...' % sql_where, end=' ')
     sys.stdout.flush()
     sql = "SELECT month_year, count(*) FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
@@ -233,12 +240,12 @@ def SQL_countDownloadsPerMonth(c, sql_where):
         month = row[0]
         if month in month_to_C.keys():
             month_to_C[month] = row[1]
-    print 'OK'
+    print('OK')
     return month_to_C
 
 def SQL_countDownloadsPerMonthOfYear(c, sql_where, year):
-    print 'Counting downloads-per-month for "%s" and year %s ...' \
-          % (sql_where, year),
+    print('Counting downloads-per-month for "%s" and year %s ...' % \
+          (sql_where, year), end=' ')
     sys.stdout.flush()
     sql = "SELECT month_year, count(*) FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
@@ -252,11 +259,11 @@ def SQL_countDownloadsPerMonthOfYear(c, sql_where, year):
         month = row[0]
         if month in month_to_C.keys():
             month_to_C[month] = row[1]
-    print 'OK'
+    print('OK')
     return month_to_C
 
 def SQL_countIPsPerMonth(c, sql_where):
-    print 'Counting distinct IPs-per-month for "%s" ...' % sql_where,
+    print('Counting distinct IPs-per-month for "%s" ...' % sql_where, end=' ')
     sys.stdout.flush()
     sql = "SELECT month_year, count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
@@ -269,12 +276,12 @@ def SQL_countIPsPerMonth(c, sql_where):
         month = row[0]
         if month in month_to_C.keys():
             month_to_C[month] = row[1]
-    print 'OK'
+    print('OK')
     return month_to_C
 
 def SQL_countIPsPerMonthOfYear(c, sql_where, year):
-    print 'Counting distinct IPs-per-month for "%s" and year %s ...' \
-          % (sql_where, year),
+    print('Counting distinct IPs-per-month for "%s" and year %s ...' % \
+          (sql_where, year), end=' ')
     sys.stdout.flush()
     sql = "SELECT month_year, count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
@@ -288,32 +295,32 @@ def SQL_countIPsPerMonthOfYear(c, sql_where, year):
         month = row[0]
         if month in month_to_C.keys():
             month_to_C[month] = row[1]
-    print 'OK'
+    print('OK')
     return month_to_C
 
 def SQL_countIPs(c, sql_where):
-    print 'Counting distinct IPs for "%s" ...' % sql_where,
+    print('Counting distinct IPs for "%s" ...' % sql_where, end=' ')
     sys.stdout.flush()
     sql = "SELECT count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where)
     c.execute(sql)
     for row in c:
-        print 'OK'
+        print('OK')
         return row[0]
 
 def SQL_countIPsForYear(c, sql_where, year):
-    print 'Counting distinct IPs for "%s" and year %s ...' \
-          % (sql_where, year),
+    print('Counting distinct IPs for "%s" and year %s ...' % \
+          (sql_where, year), end=' ')
     sys.stdout.flush()
     sql = "SELECT count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year)
     c.execute(sql)
     for row in c:
-        print 'OK'
+        print('OK')
         return row[0]
 
 def SQL_countDownloadsPerIP(c, sql_where):
-    print 'Counting downloads-per-IP for "%s" ...' % sql_where,
+    print('Counting downloads-per-IP for "%s" ...' % sql_where, end=' ')
     sys.stdout.flush()
     sql = "SELECT ips, count(*) FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
@@ -322,7 +329,7 @@ def SQL_countDownloadsPerIP(c, sql_where):
     ip_to_C = {}
     for row in c:
         ip_to_C[row[0]] = row[1]
-    print 'OK'
+    print('OK')
     return ip_to_C
 
 
@@ -365,7 +372,7 @@ def extract_package_stats_for_year(c, biocrepo, pkg, year):
 def extract_all_stats_for_year(c, biocrepo, year):
     extract_biocrepo_stats_for_year(c, biocrepo, year)
     packages_filepath = '%s_packages.txt' % biocrepo
-    packages = open(packages_filepath, 'aw')
+    packages = open(packages_filepath, 'a')
     pkgs = SQL_getDistinctPackages_for_year(c, biocrepo, year)
     for pkg in pkgs:
         if not os.path.exists(pkg):
@@ -379,8 +386,8 @@ def extract_all_stats_for_year(c, biocrepo, year):
 
 def load_package_list(packages_filepath):
     if not os.path.exists(packages_filepath):
-        print '%s file not found. Did you run extractDownloadStats*.sh?' \
-              % packages_filepath
+        print('%s file not found. Did you run extractDownloadStats*.sh?' % \
+              packages_filepath)
         sys.exit("==> EXIT")
     packages = open(packages_filepath, 'r')
     pkgs = []
@@ -434,7 +441,7 @@ def make_package_stats_file(pkg, from_year, to_year):
     return
 
 def make_biocrepo_stats_file(biocrepo, from_year, to_year):
-    print 'Make %s repo all-year stats file ...' % biocrepo,
+    print('Make %s repo all-year stats file ...' % biocrepo, end=' ')
     biocrepo_stats_filepath = '%s_stats.tab' % biocrepo
     biocrepo_stats = open(biocrepo_stats_filepath, 'w')
     write_header = True
@@ -445,22 +452,22 @@ def make_biocrepo_stats_file(biocrepo, from_year, to_year):
                                                      write_header)
         year -= 1
     biocrepo_stats.close()
-    print 'OK'
+    print('OK')
     return
 
 def make_package_stats_files(biocrepo, from_year, to_year):
-    print 'Make package all-year stats files ...',
+    print('Make package all-year stats files ...', end=' ')
     packages_filepath = '%s_packages.txt' % biocrepo
     pkgs = load_package_list(packages_filepath)
     for pkg in pkgs:
         os.chdir(pkg)
         make_package_stats_file(pkg, from_year, to_year)
         os.chdir('..')
-    print 'OK'
+    print('OK')
     return
 
 def make_allpkg_stats_file(allpkg_stats_filepath, biocrepo):
-    print 'Make all-package stats file ...',
+    print('Make all-package stats file ...', end=' ')
     packages_filepath = '%s_packages.txt' % biocrepo
     pkgs = load_package_list(packages_filepath)
     allpkg_stats = open(allpkg_stats_filepath, 'w')
@@ -480,7 +487,7 @@ def make_allpkg_stats_file(allpkg_stats_filepath, biocrepo):
             allpkg_stats.write('%s\t%s' % (pkg, line))
         pkg_stats.close()        
     allpkg_stats.close()
-    print 'OK'
+    print('OK')
     return
 
 ## The package download score is the average nb of distinct IPs over the last
@@ -518,7 +525,7 @@ def compute_package_download_score(pkg_stats_filepath, today):
     return int(math.ceil(score / 12.0))
 
 def make_allpkg_scores_file(allpkg_scores_filepath, biocrepo):
-    print 'Make all-package scores file ...',
+    print('Make all-package scores file ...', end=' ')
     packages_filepath = '%s_packages.txt' % biocrepo
     pkgs = load_package_list(packages_filepath)
     allpkg_scores = open(allpkg_scores_filepath, 'w')
@@ -530,7 +537,7 @@ def make_allpkg_scores_file(allpkg_scores_filepath, biocrepo):
         score = compute_package_download_score(pkg_stats_filepath, today)
         allpkg_scores.write('%s\t%s\n' % (pkg, score))
     allpkg_scores.close()
-    print 'OK'
+    print('OK')
     return
 
 def load_pkg2score(allpkg_scores_filepath):
@@ -604,7 +611,7 @@ def dateString(tm):
         utc_offset = time.altzone # 7 hours in Seattle
     else:
         utc_offset = time.timezone # 8 hours in Seattle
-    utc_offset /= 3600
+    utc_offset //= 3600
     format = "%%Y-%%m-%%d %%H:%%M:%%S -0%d00 (%%a, %%d %%b %%Y)" % utc_offset
     return time.strftime(format, tm)
 
@@ -621,8 +628,8 @@ def get_url_to_package_home(pkg, biocversion):
     for biocrepo in ['bioc', 'data/annotation', 'data/experiment', 'workflows']:
         url = '/packages/%s/%s/html/%s.html' % (biocversion, biocrepo, pkg)
         try:
-            urllib2.urlopen('https://bioconductor.org' + url)
-        except urllib2.HTTPError:
+            urllib.request.urlopen('https://bioconductor.org' + url)
+        except urllib.error.HTTPError:
             continue
         return url
     return None
@@ -802,7 +809,7 @@ def write_HTML_stats_for_year(out, pkg, year):
 
 def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
                              index_page_href, index_page_title):
-    print 'Make download stats HTML report for package %s ...' % pkg,
+    print('Make download stats HTML report for package %s ...' % pkg, end=' ')
     sys.stdout.flush()
     package_page = 'index.html'
     out = open(package_page, 'w')
@@ -835,7 +842,7 @@ def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
     out.write('</BODY>\n')
     out.write('</HTML>\n')
     out.close()
-    print 'OK'
+    print('OK')
     sys.stdout.flush()
     return
 
@@ -865,7 +872,7 @@ def make_redirect_page_from_old_to_new_package_HTML_report(pkg, biocrepo):
 def make_biocrepo_HTML_report(biocrepo_page, biocrepo_page_title,
                               biocrepo, from_year, to_year,
                               index_page_href, index_page_title):
-    print 'Make download stats HTML report for %s repo ...' % biocrepo,
+    print('Make download stats HTML report for %s repo ...' % biocrepo, end=' ')
     sys.stdout.flush()
     out = open(biocrepo_page, 'w')
     write_top_asHTML(out, biocrepo_page_title, '../main.css')
@@ -895,7 +902,7 @@ def make_biocrepo_HTML_report(biocrepo_page, biocrepo_page_title,
     out.write('</BODY>\n')
     out.write('</HTML>\n')
     out.close()
-    print 'OK'
+    print('OK')
     sys.stdout.flush()
     return
 
@@ -912,13 +919,14 @@ def make_package_HTML_reports(biocrepo, from_year, to_year,
     return
 
 def write_HTML_package_index(out, biocrepo, pkgs, pkg2score, n=None):
+    pkgs = list(pkgs)  # turn 'dict_keys' object into a 'list'
     if n == None:
-        pkgs.sort(lambda u, v: cmp(string.lower(u), string.lower(v)))
+        pkgs.sort(key=lambda x: x.lower())
     else:
-        pkgs.sort(lambda u, v: pkg2score[v] - pkg2score[u])
+        pkgs.sort(key=lambda x: -pkg2score[x])
         pkgs = pkgs[0:n]
     ncol = 3
-    nrow = (len(pkgs) + ncol - 1) / ncol
+    nrow = (len(pkgs) + ncol - 1) // ncol
     out.write('<TABLE class="pkg_index"><TR>\n')
     for j in range(ncol):
         out.write('<TD style="vertical-align: top; width:300px;">\n')
@@ -959,13 +967,13 @@ def write_HTML_package_alphabetical_index(out, biocrepo,
     ## Packages are grouped by first letter
     for pkg in pkgs:
         first_letter = pkg[0].upper()
-        if letter2pkgs.has_key(first_letter):
+        if first_letter in letter2pkgs:
             letter2pkgs[first_letter].append(pkg)
         else:
             letter2pkgs[first_letter] = [pkg]
     ## Write stats for each group
-    letters = letter2pkgs.keys()
-    letters.sort(lambda u, v: cmp(string.lower(u), string.lower(v)))
+    letters = list(letter2pkgs.keys())
+    letters.sort(key=lambda x: x.lower())
     for letter in letters:
         out.write('<H3 style="font-family: monospace; font-size: larger;">%s</H3>\n' % letter)
         write_HTML_package_index(out, biocrepo, letter2pkgs[letter], pkg2score)

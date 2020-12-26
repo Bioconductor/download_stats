@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 #
 
 import sys
@@ -255,7 +255,7 @@ def _get_URL_parts(m, lineno, s3=False, lineobj=None):
     if lineno != URL_cache[1]:
         URL = get_url(m, lineno, s3, lineobj)
         if URL_compiled_regex == None:
-            print 'URL_compiled_regex must be set to SQUID_URL_compiled_regex or APACHE2_URL_compiled_regex'
+            print('URL_compiled_regex must be set to SQUID_URL_compiled_regex or APACHE2_URL_compiled_regex')
             sys.exit("==> EXIT")
         URL_parts = URL_compiled_regex.match(URL)
         if URL_parts == None:
@@ -413,9 +413,9 @@ def importLogLine(c, logline, lineno, logfile, s3Fields, s3=False):
         #m = S3LINE_compiled_regex.match(newline) # too slow!
         m = None
         if not len(segs) == len(s3Fields):
-            print 'make_db.py: failed to parse S3 line %d (file %s),' % (lineno, logfile),
-            print 'rejecting it. See line below:'
-            print newline
+            print('make_db.py: failed to parse S3 line %d (file %s),' % (lineno, logfile), end=' ')
+            print('rejecting it. See line below:')
+            print('%s' % newline)
             return 0
         colnames = access_log_col2getter.keys()
     else:
@@ -424,9 +424,9 @@ def importLogLine(c, logline, lineno, logfile, s3Fields, s3=False):
             return 0
         m = SQUIDLINE_compiled_regex.match(logline)
         if not m:
-            print 'make_db.py: failed to parse line %d (file %s),' % (lineno, logfile),
-            print 'rejecting it. See line below:'
-            print logline
+            print('make_db.py: failed to parse line %d (file %s),' % (lineno, logfile), end=' ')
+            print('rejecting it. See line below:')
+            print('%s' % logline)
             #sys.exit("==> EXIT")
             return 0
         colnames = access_log_col2getter.keys() # NB. not sorted?
@@ -439,8 +439,8 @@ def importLogLine(c, logline, lineno, logfile, s3Fields, s3=False):
         return 0
     try:
         stats_utils.SQL_insertRow(c, 'access_log', col2val)
-    except sqlite3.Error, error:
-        print 'INSERT failed for line %d (file %s)' % (lineno, logfile)
+    except (sqlite3.Error, error):
+        print('INSERT failed for line %d (file %s)' % (lineno, logfile))
         raise
     return 1
 
@@ -463,6 +463,7 @@ def getS3Fields(logfile):
     file.close()
     if field_line is None:
         return None
+    field_line = stats_utils.bytes2str(field_line)
     return(field_line.strip().replace("#Fields: ", "").split(" "))
 
 
@@ -475,18 +476,19 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
             file = bz2.BZ2File(logfile)
         else:
             file = open(logfile, 'r')
-        print 'Importing log file %s ...' % logfile,
+        print('Importing log file %s ...' % logfile, end=' ')
         sys.stdout.flush()
         nb_imported_lines = nb_rejected_lines = 0
         lineno = 0
         if s3:
             s3Fields = getS3Fields(logfile)
             if s3Fields is None:
-                print "File %s has no #Fields line, skipping." % logfile
+                print("File %s has no #Fields line, skipping." % logfile)
                 continue
         else:
             s3Fields = None
         for line in file:
+            line = stats_utils.bytes2str(line)
             lineno = lineno + 1
             ret = importLogLine(c, line, lineno, logfile, s3Fields, s3=s3,)
             if ret == 0:
@@ -494,9 +496,9 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
                 trash_file.write('%s' % line)
             else:
                 nb_imported_lines += 1
-        print 'OK'
-        print '  %d imported lines / %d rejected lines' \
-              % (nb_imported_lines, nb_rejected_lines)
+        print('OK')
+        print('  %d imported lines / %d rejected lines' % \
+              (nb_imported_lines, nb_rejected_lines))
         sys.stdout.flush()
         file.close()
         total_imported_lines += nb_imported_lines
@@ -507,92 +509,92 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
 # very long time!)
 def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     global URL_compiled_regex
-    print ''
-    print '==================================================================='
-    print '==================================================================='
-    print 'START MAKING DOWNLOAD DB FOR DATES %s TO %s' \
-          % (str(from_date), str(to_date))
-    print ''
+    print('')
+    print('===================================================================')
+    print('===================================================================')
+    print('START MAKING DOWNLOAD DB FOR DATES %s TO %s' % \
+          (str(from_date), str(to_date)))
+    print('')
     trash_file = open(trashfile_path, 'w')
     conn = stats_utils.SQL_createDB(dbfile_path)
-    print '- dbfile_path: %s' % dbfile_path
-    print '- trashfile_path: %s' % trashfile_path
-    print ''
-    print '==================================================================='
+    print('- dbfile_path: %s' % dbfile_path)
+    print('- trashfile_path: %s' % trashfile_path)
+    print('')
+    print('===================================================================')
     sys.stdout.flush()
     c = conn.cursor()
     stats_utils.SQL_createAccessLogTable(c)
     total_imported_lines = total_rejected_lines = 0
-    print ''
-    print '------ START importing Squid logs ------'
+    print('')
+    print('------ START importing Squid logs ------')
     sys.stdout.flush()
     URL_compiled_regex = SQUID_URL_compiled_regex
     logfiles = stats_utils.getSquidAccessLogFiles(from_date, to_date)
     total = importLogFiles(c, logfiles, trash_file, s3=False)
-    print '------- END importing Squid logs -------'
-    print '  %d imported Squid lines / %d rejected Squid lines' \
-          % (total[0], total[1])
+    print('------- END importing Squid logs -------')
+    print('  %d imported Squid lines / %d rejected Squid lines' % \
+          (total[0], total[1]))
     total_imported_lines += total[0]
     total_rejected_lines += total[1]
-    print ''
-    print '------ START importing Apache2 logs ------'
+    print('')
+    print('------ START importing Apache2 logs ------')
     sys.stdout.flush()
     URL_compiled_regex = APACHE2_URL_compiled_regex
     logfiles = stats_utils.getApache2AccessLogFiles(from_date, to_date)
     total = importLogFiles(c, logfiles, trash_file, s3=False)
-    print '------- END importing Apache2 logs -------'
-    print '  %d imported Apache2 lines / %d rejected Apache2 lines' \
-          % (total[0], total[1])
+    print('------- END importing Apache2 logs -------')
+    print('  %d imported Apache2 lines / %d rejected Apache2 lines' % \
+          (total[0], total[1]))
     total_imported_lines += total[0]
     total_rejected_lines += total[1]
-    print ''
-    print '------ START importing S3 logs ------'
+    print('')
+    print('------ START importing S3 logs ------')
     sys.stdout.flush()
     URL_compiled_regex = APACHE2_URL_compiled_regex # ok?
     logfiles = stats_utils.getCloudFrontAccessLogFiles(from_date, to_date)
     total = importLogFiles(c, logfiles, trash_file, s3=True)
-    print '------- END importing S3 logs -------'
-    print '  %d imported S3 lines / %d rejected S3 lines' \
-          % (total[0], total[1])
+    print('------- END importing S3 logs -------')
+    print('  %d imported S3 lines / %d rejected S3 lines' % \
+          (total[0], total[1]))
     total_imported_lines += total[0]
     total_rejected_lines += total[1]
-    print ''
+    print('')
     conn.commit()
-    print 'Creating index on access_log.ips column ...'
+    print('Creating index on access_log.ips column ...')
     sys.stdout.flush()
     c.execute('CREATE INDEX ipsI ON access_log (ips)')
-    print 'Creating index on access_log.month_year column ...'
+    print('Creating index on access_log.month_year column ...')
     sys.stdout.flush()
     c.execute('CREATE INDEX month_yearI ON access_log (month_year)')
-    print 'Creating index on access_log.package column ...'
+    print('Creating index on access_log.package column ...')
     sys.stdout.flush()
     c.execute('CREATE INDEX packageI ON access_log (package)')
     conn.commit()
     c.close()
     conn.close()
     trash_file.close()
-    print ''
-    print '==================================================================='
-    print 'DONE MAKING DOWNLOAD DB FOR DATES %s TO %s' \
-          % (str(from_date), str(to_date))
-    print ''
-    print '- dbfile_path: %s' % dbfile_path
-    print '- trashfile_path: %s' % trashfile_path
-    print ''
-    print '%d lines were imported in total' % total_imported_lines
-    print '%d lines were rejected in total' % total_rejected_lines
-    print ''
-    print '==================================================================='
-    print '==================================================================='
-    print ''
+    print('')
+    print('===================================================================')
+    print('DONE MAKING DOWNLOAD DB FOR DATES %s TO %s' % \
+          (str(from_date), str(to_date)))
+    print('')
+    print('- dbfile_path: %s' % dbfile_path)
+    print('- trashfile_path: %s' % trashfile_path)
+    print('')
+    print('%d lines were imported in total' % total_imported_lines)
+    print('%d lines were rejected in total' % total_rejected_lines)
+    print('')
+    print('===================================================================')
+    print('===================================================================')
+    print('')
     sys.stdout.flush()
 
 def makeDownloadDbForYear(year, force=False):
     dbfile_path = 'download_db_' + str(year) + '.sqlite'
     dbfile_path = os.path.join('download_dbs', dbfile_path)
     if os.path.exists(dbfile_path) and not force:
-        print '%s: %s exists and force=False ==> won\'t remake it' % \
-              (time.asctime(), dbfile_path)
+        print('%s: %s exists and force=False ==> won\'t remake it' % \
+              (time.asctime(), dbfile_path))
         sys.stdout.flush()
         return
     trashfile_path = '/dev/null'  # trash_file is really too big these days!

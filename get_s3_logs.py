@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 
 from time import localtime, strftime
 import os
@@ -8,9 +8,9 @@ with warnings.catch_warnings():
     from boto.s3.connection import S3Connection
 
 from boto.s3.bucket import Bucket
-import ConfigParser
+import configparser
 
-config = ConfigParser.RawConfigParser()
+config = configparser.RawConfigParser()
 config.read('aws.cfg')
 
 start = strftime("%Y-%m-%d %H:%M:%S", localtime())
@@ -31,7 +31,7 @@ downloadcount = 0
 
 print("Iterating through bucket list...")
 for key in b.list():
-    name = key.name.encode('utf-8')
+    name = key.name
     segs = name.split(".")
     segs2 = segs[1].split("-")
     segs2.pop()
@@ -45,7 +45,7 @@ for key in b.list():
     if not os.path.exists(destfile):
         key.get_contents_to_filename("%s/%s" % (destdir, name))
         if (downloadcount > 0 and downloadcount % 50 == 0):
-            print "Count of downloaded log files: %s" % downloadcount
+            print("Count of downloaded log files: %s" % downloadcount)
         downloadcount += 1
 
 print("Total files downloaded: %s." % downloadcount)

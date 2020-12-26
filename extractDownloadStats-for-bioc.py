@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 #
 
 import os
@@ -18,13 +18,13 @@ allpkg_stats_filename = '%s_pkg_stats.tab' % biocrepo
 allpkg_scores_filename = '%s_pkg_scores.tab' % biocrepo
 
 def extractDownloadStatsForYear(year):
-    print ''
-    print '==================================================================='
-    print '==================================================================='
-    print 'START EXTRACTING SOFTARE PACKAGE DOWNLOAD STATS FOR YEAR %s' % year
-    print '==================================================================='
-    print '==================================================================='
-    print ''
+    print('')
+    print('===================================================================')
+    print('===================================================================')
+    print('START EXTRACTING SOFTARE PACKAGE DOWNLOAD STATS FOR YEAR %s' % year)
+    print('===================================================================')
+    print('===================================================================')
+    print('')
     wd0 = os.getcwd()
     dbfile_path = 'download_db_' + str(year) + '.sqlite'
     dbfile_path = os.path.join('download_dbs', dbfile_path)
@@ -37,13 +37,13 @@ def extractDownloadStatsForYear(year):
     c.close()
     conn.close()
     os.chdir(wd0)
-    print ''
-    print '==================================================================='
-    print '==================================================================='
-    print 'DONE EXTRACTING SOFTARE PACKAGE DOWNLOAD STATS FOR YEAR %s' % year
-    print '==================================================================='
-    print '==================================================================='
-    print ''
+    print('')
+    print('===================================================================')
+    print('===================================================================')
+    print('DONE EXTRACTING SOFTARE PACKAGE DOWNLOAD STATS FOR YEAR %s' % year)
+    print('===================================================================')
+    print('===================================================================')
+    print('')
     return
 
 for year in range(from_year, to_year + 1):
