@@ -8,7 +8,8 @@ import time
 import math
 import matplotlib
 matplotlib.use('agg')
-import pylab
+import matplotlib.pyplot as plt
+import numpy
 import urllib.request
 
 import stats_config
@@ -653,9 +654,36 @@ def write_links_to_package_home(out, pkg):
     out.write('.</P>\n')
     return
 
+def plot_yticks_and_labels(nb_pow10ticks):
+    yticks = [0]
+    ylabels = ['0']
+    for i in range(0, nb_pow10ticks):
+        at = 10 ** i
+        y = math.log10(1 + at)
+        plt.axhline(y, linewidth=0.8, color='black', alpha=0.20)
+        ylabel = str(at) if i <= 2 else '1e' + str(i)
+        yticks.append(y)
+        ylabels.append(ylabel)
+        if i < nb_pow10ticks - 1:
+            for j in range(2, 10):
+                at = j * 10 ** i
+                y = math.log10(1 + at)
+                plt.axhline(y, linewidth=0.5, color='black', alpha=0.08)
+                if nb_pow10ticks <= 6 and (j == 2 or j == 5):
+                    if i <= 2:
+                        ylabel = str(at)
+                    else:
+                        ylabel = str(j) + 'e' + str(i)
+                    yticks.append(y)
+                    ylabels.append(ylabel)
+    plt.yticks(yticks, ylabels)
+    return
+
 def make_barplot2ylog(title, barplot_filepath, barlabels,
                       barlabel_to_C1, C1_label, C1_color,
                       barlabel_to_C2, C2_label, C2_color, Cmax=None):
+    plt.figure(figsize=(8, 6))
+    plt.clf()
     c1_vals = []
     c2_vals = []
     Cmax0 = 0
@@ -668,47 +696,25 @@ def make_barplot2ylog(title, barplot_filepath, barlabels,
         if C2 > Cmax0:
             Cmax0 = C2
         c2_vals.append(math.log10(1 + C2))
-    pylab.clf()
-    xtickat = pylab.arange(len(c1_vals)) + 0.5
+    xticks = numpy.arange(len(c1_vals)) + 0.5
     width = 0.40  # the width of the bars
-    rects1 = pylab.bar(xtickat - width, c1_vals, width, color=C1_color)
-    rects2 = pylab.bar(xtickat,         c2_vals, width, color=C2_color)
+    rects2 = plt.bar(xticks, c2_vals,  width, align='edge', color=C2_color)
+    rects1 = plt.bar(xticks, c1_vals, -width, align='edge', color=C1_color)
     xlabels = []
     for i in range(0, len(barlabels)):
-        if i % 3 != 2:
-            label = ''
-        else:
-            label = barlabels[i]
+        label = barlabels[i].replace('/', '\n')
         xlabels.append(label)
-    pylab.xticks(xtickat, xlabels)
+    plt.xticks(xticks, xlabels)
     if Cmax == None:
         Cmax = Cmax0
     if Cmax < 100:
         nb_pow10ticks = 3
     else:
         nb_pow10ticks = int(math.log10(Cmax)) + 2
-    ytickat = [0]
-    ylabels = ['0']
-    for i in range(0, nb_pow10ticks):
-        at = 10 ** i
-        y = math.log10(1 + at)
-        ytickat.append(y)
-        ylabels.append(str(at))
-        if i < nb_pow10ticks - 1:
-            pylab.axhline(y, color='black', alpha=0.16)
-            for j in range(1, 10):
-                y = math.log10(1 + j * at)
-                ytickat.append(y)
-                if nb_pow10ticks <= 6 and (j == 2 or j == 5):
-                    ylabel = str(j *at)
-                else:
-                    ylabel = ''
-                ylabels.append(ylabel)
-                pylab.axhline(y, color='black', alpha=0.08)
-    pylab.yticks(ytickat, ylabels)
-    pylab.title(title)
-    pylab.legend((rects1[0], rects2[0]), (C1_label, C2_label), loc=8)
-    pylab.savefig(barplot_filepath, format='png')
+    plot_yticks_and_labels(nb_pow10ticks)
+    plt.title(title)
+    plt.legend((rects1[0], rects2[0]), (C1_label, C2_label), loc=8)
+    plt.savefig(barplot_filepath, format='png')
     return
 
 def write_HTML_stats_TABLE(out, months,
