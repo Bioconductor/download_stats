@@ -9,6 +9,9 @@ import math
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
+## Seems like calling this repeatedly somehow creates a memory leak so we
+## call it upfront and only once here instead of inside make_barplot2ylog().
+plt.figure(figsize=(9, 5))
 import numpy
 import urllib.request
 
@@ -629,7 +632,12 @@ def get_url_to_package_home(pkg, biocversion):
     for biocrepo in ['bioc', 'data/annotation', 'data/experiment', 'workflows']:
         url = '/packages/%s/%s/html/%s.html' % (biocversion, biocrepo, pkg)
         try:
-            urllib.request.urlopen('https://bioconductor.org' + url)
+            ## Using plain HTTP to test the URL seems to be slightly faster
+            ## and more reliable than doing it with HTTPS e.g. no
+            ##   ConnectionResetError: [Errno 104] Connection reset by peer
+            ## like happens sometimes with HTTPS.
+            #urllib.request.urlopen('https://bioconductor.org' + url)
+            urllib.request.urlopen('http://bioconductor.org' + url)
         except urllib.error.HTTPError:
             continue
         return url
@@ -661,7 +669,7 @@ def plot_yticks_and_labels(nb_pow10ticks):
         at = 10 ** i
         y = math.log10(1 + at)
         plt.axhline(y, linewidth=0.8, color='black', alpha=0.20)
-        ylabel = str(at) if i <= 2 else '1e' + str(i)
+        ylabel = str(at) if i <= 5 else '1e' + str(i)
         yticks.append(y)
         ylabels.append(ylabel)
         if i < nb_pow10ticks - 1:
@@ -670,7 +678,7 @@ def plot_yticks_and_labels(nb_pow10ticks):
                 y = math.log10(1 + at)
                 plt.axhline(y, linewidth=0.5, color='black', alpha=0.08)
                 if nb_pow10ticks <= 6 and (j == 2 or j == 5):
-                    if i <= 2:
+                    if i <= 5:
                         ylabel = str(at)
                     else:
                         ylabel = str(j) + 'e' + str(i)
@@ -682,7 +690,9 @@ def plot_yticks_and_labels(nb_pow10ticks):
 def make_barplot2ylog(title, barplot_filepath, barlabels,
                       barlabel_to_C1, C1_label, C1_color,
                       barlabel_to_C2, C2_label, C2_color, Cmax=None):
-    plt.figure(figsize=(8, 6))
+    ## See at the top of this file fow why plt.figure() shouldn't be called
+    ## here.
+    #plt.figure(figsize=(9, 5))
     plt.clf()
     c1_vals = []
     c2_vals = []
@@ -799,7 +809,7 @@ def write_HTML_stats_for_year(out, pkg, year):
     #out.write('<P style="text-align: center">\n')
     out.write('<TABLE WIDTH="90%" align="center"><TR>\n')
     out.write('<TD style="text-align: center">')
-    out.write('<IMG SRC="%s" WIDTH="520px" HEIGHT="390px">' % barplot_filepath)
+    out.write('<IMG SRC="%s" WIDTH="720px" HEIGHT="400px">' % barplot_filepath)
     out.write('</TD>')
     out.write('<TD style="text-align: center">')
     write_HTML_stats_TABLE(out, months,
