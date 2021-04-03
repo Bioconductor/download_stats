@@ -800,7 +800,7 @@ def write_HTML_stats_for_year(out, pkg, year):
             month_to_C1[key] = c1
             month_to_C2[key] = c2
     year_stats.close()
-    C1_color = '#8888ff'
+    C1_color = '#aaaaff'
     C2_color = '#ddddff'
     barplot_filepath = '%s_%s_stats.png' % (pkg, year)
     make_barplot2ylog('%s %s' % (pkg, year), barplot_filepath, months,
