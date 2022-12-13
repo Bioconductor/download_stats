@@ -53,7 +53,7 @@ apache_fields = (
     unquoted_field_regex,       # (ignored)
     apache_time_field_regex,    # day_month_year/time/utc_offset
     quoted_field_regex,         # request (method/url/protocol)
-    unquoted_field_regex,       # errorcode
+    unquoted_field_regex,       # HTTP status code
     unquoted_field_regex,       # bytes
     quoted_field_regex,         # referer
     quoted_field_regex          # user agent
@@ -68,7 +68,7 @@ squid_fields = (
     apache_time_field_regex,    # field no 4: day_month_year/time/utc_offset
     #quoted_field_regex,         # field no 5: request (method/url/protocol)
     squid_request_field_regex,  # field no 5: request (method/url/protocol)
-    unquoted_field_regex,       # field no 6: errorcode
+    unquoted_field_regex,       # field no 6: HTTP status code
     unquoted_field_regex,       # field no 7: bytes
     leftover
 )
@@ -83,7 +83,7 @@ s3_fields = (
     squid_ips_field_regex,  # field no 5: c-ip
     s3_unquoted_field,      # field no 6: method
     s3_unquoted_field,      # field no 7: cs(Host) (ignored)
-    s3_unquoted_field,      # field no 8: cs-uri-stem (ignored)
+    s3_unquoted_field,      # field no 8: cs-uri-stem
     s3_unquoted_field,      # field no 9: sc-status
     s3_unquoted_field,      # field no 10: cs(Referer)
     s3_unquoted_field,      # field no 11: cs(User-Agent)
@@ -303,19 +303,21 @@ def get_pkgtype(m, lineno, s3, lineobj=None):
     return URL_parts.group(5)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-### ERRORCODE field
+### STATUSCODE field
 ###
 
-def get_errorcode(m, lineno, s3, lineobj):
+def get_statuscode(m, lineno, s3, lineobj):
     if (s3):
         val = lineobj['sc-status']
     else:
         val = m.group(6)
-    ## 'm.group(6)' is field no 6 in 'squid_fields'
-    #if val[0] != '2':
-    ## NB: CloudFront may legitimately use codes other than 200?
-    if val != '200':
-        raise BadInputLine("NOT200_IN_ERRORCODE_FIELD")
+    ## We only import lines with HTTP status code 200 (OK), 301 (Moved
+    ## Permanently), 302 (Found (Previously "Moved temporarily")),
+    ## 307 (Temporary Redirect (since HTTP/1.1)), and 308 (Permanent Redirect).
+    ## See https://en.wikipedia.org/wiki/List_of_HTTP_status_codes for status
+    ## code meanings.
+    if val not in ['200', '301', '302', '307', '308']:
+        raise BadInputLine("BAD_STATUSCODE")
     return val
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -376,7 +378,7 @@ access_log_col2getter = {
   'method': get_method,
   'url': get_url,
   'protocol': get_protocol,
-  'errorcode': get_errorcode,
+  'statuscode': get_statuscode,
   'bytes': get_bytes,
   'referer': get_referer,
   'user_agent': get_user_agent,

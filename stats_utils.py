@@ -152,7 +152,7 @@ access_log_col2type = {
   'method': 'TEXT NOT NULL',
   'url': 'TEXT NOT NULL',
   'protocol': 'TEXT NOT NULL',
-  'errorcode': 'TEXT NOT NULL',
+  'statuscode': 'TEXT NOT NULL',
   'bytes': 'INTEGER NULL',
   'referer': 'TEXT NULL',
   'user_agent': 'TEXT NULL',
