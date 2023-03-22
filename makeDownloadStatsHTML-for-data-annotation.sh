@@ -11,7 +11,7 @@ notify()
 	stats_logdir="~biocadmin/cron.log/stats/"
 	stats_host="stats.bioconductor.org"
 	subject="Download stats problem: $stats_script returned an error!"
-	msg1="Check the logs in $stats_logdir on $stats_host for the details."
+	msg1="Check the logs in $stats_logdir at $stats_host for the details."
 	msg2="Please do NOT reply."
 	# Make sure to set SMTP settings in ~/.mutt/muttrc
 	echo -e "$msg1\n\n$msg2" | mutt -s "$subject" "$addr"
