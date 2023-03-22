@@ -20,5 +20,6 @@ cd $STATS_HOME
 ./get_s3_logs.py
 if [ $? -ne 0 ]; then
 	notify maintainer@bioconductor.org
+	exit 2
 fi
 

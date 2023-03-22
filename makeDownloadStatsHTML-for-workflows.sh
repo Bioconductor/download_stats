@@ -22,6 +22,7 @@ cp main.css $HTML_STATS_HOME
 ./makeDownloadStatsHTML-for-workflows.py
 if [ $? -ne 0 ]; then
 	notify maintainer@bioconductor.org
+	exit 2
 fi
 
 rsync --delete -ave ssh $HTML_STATS_HOME/ webadmin@master.bioconductor.org:/extra/www/bioc/packages/stats/

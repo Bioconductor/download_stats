@@ -22,5 +22,6 @@ rm -rf $HTML_STATS_HOME/bioc
 ./extractDownloadStats-for-bioc.py
 if [ $? -ne 0 ]; then
 	notify maintainer@bioconductor.org
+	exit 2
 fi
 
