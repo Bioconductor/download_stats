@@ -24,7 +24,7 @@ Version: rev 1
 
 # Overview
 
-![[Pasted image 20230921072548.png]]
+![Block Diagram](design_brief_block_diagram.png)
 # Current State
 ## Repo
 - https://github.com/Bioconductor/download_stats
