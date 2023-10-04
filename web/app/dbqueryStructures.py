@@ -24,6 +24,7 @@ from enum import Enum, auto
 class QueryRequestType(Enum):
     PACKAGE_SCORES = auto()     # Return package names and scores, one row for each package
     PACKAGE_COUNTS = auto()     # Return package names and counts
+    PACKAGE_NAMES = auto()
 
 class PackageType(Enum):
     BIOC = "Software"
@@ -63,10 +64,10 @@ Represents a single entry in the result set, containing a date and a count.
     isYearly - If false, then the date denotes the one month date span
                 which contains the given date.
                If true, then the date denotes the year.
-               Example: date='2021-07-01'
+               Example: date='2021-06-01'
                     isYearly=false => date span: 2021-06-01:2021-06-30
                     isYearly=true => date span: 2021-06-01:2022-05-31
                 UniqueIpCount, int, the innique IP count for the period
                 downloadCount, int, the download count 
 """
-DbResultEntry = namedtuple("DbResultEntry", ["date", "isYearly" "uniqueIpCount", "downloadCount"])
+DbResultEntry = namedtuple("DbResultEntry", ["package_name", "date", "isYearly", "uniqueIpCount", "downloadCount"])
