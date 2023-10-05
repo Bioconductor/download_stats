@@ -6,7 +6,9 @@ def test_dbquery_scores():
                          package_type=dbs.PackageType.BIOC, package_name='S4Vectors', year='2022')
     r = dbquery(q)
     print(r)
-    assert(r.status == dbs.DataRetrievalStatus.SUCCESS)
-    assert(r.result[0].package_name == 'S4Vectors')
+    assert r.status == dbs.DataRetrievalStatus.SUCCESS
+    assert r.result[0].package_name == 'S4Vectors'
 
-test_dbquery_scores()
+    
+def test_getpackages(getpackages):
+    assert getpackages[0] == 'bob'
