@@ -1,6 +1,19 @@
 import app.dbqueryStructures as dbs
 
 def dbquery(request: dbs.DbQueryRequest) -> dbs.DbQueryResponse:
+    """
+    Executes a query against the bioc_package_stats database
+
+    Parameters:
+    query (db.DbQueryRequest) - The parameters for the query
+
+    Returns:
+        db.QueryResponse - The return status code
+                If .statusCode is SUCCESS, then the data as well
+    Raises:
+        TODO: ERROR -- INVALID Query format
+    """
+    
     # TODO Call dbAdapter
     match request.query_type:
         case dbs.QueryRequestType.PACKAGE_SCORES:
