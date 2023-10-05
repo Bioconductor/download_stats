@@ -1,4 +1,13 @@
-import app.dbqueryStructures as dbs
+
+import app.dbquery_structures as dbs
+
+
+def get_db_connection():
+    raise NotImplementedError("This function has not yet been implemented.")
+    return None
+
+
+
 
 def dbquery(request: dbs.DbQueryRequest) -> dbs.DbQueryResponse:
     """

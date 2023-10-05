@@ -17,12 +17,15 @@ Usage:
 Additional Information:
     none
 """
+# TODO camel -> underbar
+
 from collections import namedtuple
 from enum import Enum, auto
 
 class QueryRequestType(Enum):
     PACKAGE_SCORES = auto()     # Return package names and scores, one row for each package
     PACKAGE_COUNTS = auto()     # Return package names and counts
+    PACKAGE_NAMES = auto()
 
 class PackageType(Enum):
     BIOC = "Software"
@@ -68,4 +71,4 @@ Represents a single entry in the result set, containing a date and a count.
                 UniqueIpCount, int, the innique IP count for the period
                 downloadCount, int, the download count 
 """
-DbResultEntry = namedtuple("DbResultEntry", ["date", "isYearly" "uniqueIpCount", "downloadCount"])
+DbResultEntry = namedtuple("DbResultEntry", ["package_name", "date", "isYearly", "uniqueIpCount", "downloadCount"])
