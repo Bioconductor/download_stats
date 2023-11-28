@@ -394,7 +394,7 @@ access_log_col2getter = {
 
 # unlike shell processes, a return code of 0 signifies an error
 # and 1 signifies no error.
-def importLogLine(c, logline, lineno, logfile, s3=False):
+def importLogLine(cur, logline, lineno, logfile, s3=False):
     lineobj = None
     if s3:
         #if (logline[0] == '#'):
@@ -439,13 +439,13 @@ def importLogLine(c, logline, lineno, logfile, s3=False):
     except BadInputLine:
         return 0
     try:
-        stats_utils.SQL_insertRow(c, 'access_log', col2val)
+        stats_utils.SQL_insertRow(cur, 'access_log', col2val)
     except sqlite3.Error, error:
         print 'INSERT failed for line %d (file %s)' % (lineno, logfile)
         raise
     return 1
 
-def importLogFiles(c, logfiles, trash_file, s3=False):
+def importLogFiles(cur, logfiles, trash_file, s3=False):
     total_imported_lines = total_rejected_lines = 0
     for logfile in logfiles:
         if logfile[-2:] == 'gz':
@@ -459,7 +459,7 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
         lineno = 0
         for line in file:
             lineno = lineno + 1
-            ret = importLogLine(c, line, lineno, logfile, s3=s3)
+            ret = importLogLine(cur, line, lineno, logfile, s3=s3)
             if ret == 0:
                 nb_rejected_lines += 1
                 trash_file.write('%s' % line)
@@ -473,8 +473,8 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
     return (total_imported_lines, total_rejected_lines)
 
 # conn = stats_utils.SQL_createDB(stats_config.dbfile)
-# c = conn.cursor()
-# stats_utils.SQL_createAccessLogTable(c)
+# cur = conn.cursor()
+# stats_utils.SQL_createAccessLogTable(cur)
 
 # trash_file = open('trash.log', 'w')
 # total_imported_lines = total_rejected_lines = 0
@@ -482,7 +482,7 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
 # print ''
 # print 'START importing Squid logs.'
 # URL_compiled_regex = SQUID_URL_compiled_regex
-# total = importLogFiles(c, stats_utils.getSquidAccessLogFiles(), trash_file, s3=False)
+# total = importLogFiles(cur, stats_utils.getSquidAccessLogFiles(), trash_file, s3=False)
 # print 'END importing Squid logs.'
 # print '  %d imported Squid lines / %d rejected Squid lines' % (total[0], total[1])
 # total_imported_lines += total[0]
@@ -491,7 +491,7 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
 # print ''
 # print 'START importing Apache2 logs.'
 # URL_compiled_regex = APACHE2_URL_compiled_regex
-# total = importLogFiles(c, stats_utils.getApache2AccessLogFiles(), trash_file, s3=False)
+# total = importLogFiles(cur, stats_utils.getApache2AccessLogFiles(), trash_file, s3=False)
 # print 'END importing Apache2 logs.'
 # print '  %d imported Apache2 lines / %d rejected Apache2 lines' % (total[0], total[1])
 # total_imported_lines += total[0]
@@ -500,7 +500,7 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
 # print ''
 # print 'START importing S3 logs.'
 # URL_compiled_regex = APACHE2_URL_compiled_regex # ok?
-# total = importLogFiles(c, stats_utils.getS3AccessLogFiles(), trash_file, s3=True)
+# total = importLogFiles(cur, stats_utils.getS3AccessLogFiles(), trash_file, s3=True)
 # print 'END importing S3 logs.'
 # print '  %d imported S3 lines / %d rejected S3 lines' % (total[0], total[1])
 # total_imported_lines += total[0]
@@ -513,14 +513,14 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
 
 # conn.commit()
 # print 'Creating index on access_log.ips column ...'
-# c.execute('CREATE INDEX ipsI ON access_log (ips)')
+# cur.execute('CREATE INDEX ipsI ON access_log (ips)')
 # print 'Creating index on access_log.month_year column ...'
-# c.execute('CREATE INDEX month_yearI ON access_log (month_year)')
+# cur.execute('CREATE INDEX month_yearI ON access_log (month_year)')
 # print 'Creating index on access_log.package column ...'
-# c.execute('CREATE INDEX packageI ON access_log (package)')
+# cur.execute('CREATE INDEX packageI ON access_log (package)')
 # conn.commit()
 
-# c.close()
+# cur.close()
 # conn.close()
 
 # print ''

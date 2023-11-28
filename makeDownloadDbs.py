@@ -397,7 +397,7 @@ access_log_col2getter = {
 
 # unlike shell processes, a return code of 0 signifies an error
 # and 1 signifies no error.
-def importLogLine(c, logline, lineno, logfile, s3Fields, s3=False):
+def importLogLine(cur, logline, lineno, logfile, s3Fields, s3=False):
     lineobj = None
     if s3:
         #if (logline[0] == '#'):
@@ -442,7 +442,7 @@ def importLogLine(c, logline, lineno, logfile, s3Fields, s3=False):
     except BadInputLine:
         return 0
     try:
-        stats_utils.SQL_insertRow(c, 'access_log', col2val)
+        stats_utils.SQL_insertRow(cur, 'access_log', col2val)
     except (sqlite3.Error, error):
         print('INSERT failed for line %d (file %s)' % (lineno, logfile))
         raise
@@ -471,7 +471,7 @@ def getS3Fields(logfile):
     return(field_line.strip().replace("#Fields: ", "").split(" "))
 
 
-def importLogFiles(c, logfiles, trash_file, s3=False):
+def importLogFiles(conn, cur, logfiles, trash_file, s3=False):
     total_imported_lines = total_rejected_lines = 0
     for logfile in logfiles:
         if logfile[-2:] == 'gz':
@@ -494,12 +494,14 @@ def importLogFiles(c, logfiles, trash_file, s3=False):
         for line in file:
             line = stats_utils.bytes2str(line)
             lineno = lineno + 1
-            ret = importLogLine(c, line, lineno, logfile, s3Fields, s3=s3,)
+            ret = importLogLine(cur, line, lineno, logfile, s3Fields, s3=s3,)
             if ret == 0:
                 nb_rejected_lines += 1
                 trash_file.write('%s' % line)
             else:
                 nb_imported_lines += 1
+        if nb_imported_lines != 0:
+            conn.commit()
         print('OK')
         print('  %d imported lines / %d rejected lines' % \
               (nb_imported_lines, nb_rejected_lines))
@@ -526,15 +528,15 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     print('')
     print('===================================================================')
     sys.stdout.flush()
-    c = conn.cursor()
-    stats_utils.SQL_createAccessLogTable(c)
+    cur = conn.cursor()
+    stats_utils.SQL_createAccessLogTable(cur)
     total_imported_lines = total_rejected_lines = 0
     print('')
     print('------ START importing Squid logs ------')
     sys.stdout.flush()
     URL_compiled_regex = SQUID_URL_compiled_regex
     logfiles = stats_utils.getSquidAccessLogFiles(from_date, to_date)
-    total = importLogFiles(c, logfiles, trash_file, s3=False)
+    total = importLogFiles(conn, cur, logfiles, trash_file, s3=False)
     print('------- END importing Squid logs -------')
     print('  %d imported Squid lines / %d rejected Squid lines' % \
           (total[0], total[1]))
@@ -545,7 +547,7 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     sys.stdout.flush()
     URL_compiled_regex = APACHE2_URL_compiled_regex
     logfiles = stats_utils.getApache2AccessLogFiles(from_date, to_date)
-    total = importLogFiles(c, logfiles, trash_file, s3=False)
+    total = importLogFiles(conn, cur, logfiles, trash_file, s3=False)
     print('------- END importing Apache2 logs -------')
     print('  %d imported Apache2 lines / %d rejected Apache2 lines' % \
           (total[0], total[1]))
@@ -556,25 +558,26 @@ def makeDownloadDb(dbfile_path, trashfile_path, from_date=None, to_date=None):
     sys.stdout.flush()
     URL_compiled_regex = APACHE2_URL_compiled_regex # ok?
     logfiles = stats_utils.getCloudFrontAccessLogFiles(from_date, to_date)
-    total = importLogFiles(c, logfiles, trash_file, s3=True)
+    total = importLogFiles(conn, cur, logfiles, trash_file, s3=True)
     print('------- END importing S3 logs -------')
     print('  %d imported S3 lines / %d rejected S3 lines' % \
           (total[0], total[1]))
     total_imported_lines += total[0]
     total_rejected_lines += total[1]
     print('')
-    conn.commit()
     print('Creating index on access_log.ips column ...')
     sys.stdout.flush()
-    c.execute('CREATE INDEX ipsI ON access_log (ips)')
+    cur.execute('CREATE INDEX ipsI ON access_log (ips)')
+    conn.commit()
     print('Creating index on access_log.month_year column ...')
     sys.stdout.flush()
-    c.execute('CREATE INDEX month_yearI ON access_log (month_year)')
+    cur.execute('CREATE INDEX month_yearI ON access_log (month_year)')
+    conn.commit()
     print('Creating index on access_log.package column ...')
     sys.stdout.flush()
-    c.execute('CREATE INDEX packageI ON access_log (package)')
+    cur.execute('CREATE INDEX packageI ON access_log (package)')
     conn.commit()
-    c.close()
+    cur.close()
     conn.close()
     trash_file.close()
     print('')
