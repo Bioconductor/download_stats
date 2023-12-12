@@ -1,7 +1,7 @@
 import sys
 import os
 import string
-import sqlite3
+import duckdb
 import re
 import datetime
 import time
@@ -172,26 +172,30 @@ def SQL_createDB(dbfile):
     if os.path.exists(dbfile):
         print('Removing existing %s file ...' % dbfile)
         os.remove(dbfile)
-    return sqlite3.connect(dbfile)
+    return duckdb.connect(dbfile)
 
-def SQL_createAccessLogTable(cur):
+def SQL_createAccessLogTable(conn):
     sql = ''
     for colname in access_log_col2type.keys():
         if sql != '':
             sql += ', '
         sql += colname + ' ' + access_log_col2type[colname]
     sql = 'CREATE TABLE access_log (%s)' % sql
-    cur.execute(sql)
+    conn.sql(sql)
     return
 
-def SQL_insertRow(cur, tablename, col2val):
+def SQL_insertRow(conn, tablename, col2val):
     cols = ','.join(col2val.keys())
-    placeholders = []
-    for val in col2val.values():
-        placeholders.append('?')
-    placeholders = ','.join(placeholders)
-    sql = 'INSERT INTO %s (%s) VALUES (%s)' % (tablename, cols, placeholders)
-    cur.execute(sql, tuple(col2val.values()))
+    vals = []
+    for v in col2val.values():
+        if isinstance(v, str):
+            v = "'%s'" % v
+        else:
+            v = str(v)
+        vals.append(v)
+    vals = ','.join(vals)
+    sql = 'INSERT INTO %s (%s) VALUES (%s)' % (tablename, cols, vals)
+    conn.sql(sql)
     return sql
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -202,7 +206,7 @@ def SQL_connectToDB(dbfile):
     if not os.path.exists(dbfile):
         print('%s file not found. Did you run makeDownloadDbs.sh?' % dbfile)
         sys.exit("==> EXIT")
-    return sqlite3.connect(dbfile)
+    return duckdb.connect(dbfile)
 
 def SQL_globalFilter():
     date_is_in_range = "month_year IN ('%s')" % \
@@ -210,129 +214,117 @@ def SQL_globalFilter():
     global_filter = date_is_in_range
     return global_filter
 
-def SQL_getDistinctPackages(cur, biocrepo='bioc'):
+def SQL_getDistinctPackages(conn, biocrepo='bioc'):
     sql = "SELECT DISTINCT package FROM access_log WHERE biocrepo='%s' AND %s" \
         % (biocrepo, SQL_globalFilter())
-    cur.execute(sql)
-    pkgs = []
-    for row in cur:
-        pkgs.append(str(row[0]))
+    pkgs = conn.execute(sql).fetchnumpy()['package'].tolist()
     #pkgs.sort(key=lambda x: x.lower())
     return pkgs
 
-def SQL_getDistinctPackages_for_year(cur, biocrepo, year):
+def SQL_getDistinctPackages_for_year(conn, biocrepo, year):
     sql = "SELECT DISTINCT package FROM access_log " + \
           "WHERE biocrepo='%s' AND month_year LIKE '%%/%s'" % (biocrepo, year)
-    cur.execute(sql)
-    pkgs = []
-    for row in cur:
-        pkgs.append(str(row[0]))
+    pkgs = conn.execute(sql).fetchnumpy()['package'].tolist()
     #pkgs.sort(key=lambda x: x.lower())
     return pkgs
 
-def SQL_countDownloadsPerMonth(cur, sql_where):
-    print('Counting downloads-per-month for "%s" ...' % sql_where, end=' ')
-    sys.stdout.flush()
-    sql = "SELECT month_year, count(*) FROM access_log" \
-        + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
-        + " GROUP BY month_year"
-    cur.execute(sql)
+def SQL_countDownloadsPerMonth(conn, sql_where):
     month_to_C = {}
     for month in stats_config.lastmonths:
         month_to_C[month] = 0
-    for row in cur:
-        month = row[0]
-        if month in month_to_C.keys():
-            month_to_C[month] = row[1]
+    print('Counting downloads-per-month for "%s" ...' % sql_where, end=' ')
+    sys.stdout.flush()
+    sql = "SELECT month_year, count(*) AS C FROM access_log" \
+        + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
+        + " GROUP BY month_year"
+    res = conn.execute(sql).fetchnumpy()
+    keys = res['month_year'].tolist()
+    values = res['C'].tolist()
+    month_to_C |= dict(zip(keys, values))
     print('OK')
     return month_to_C
 
-def SQL_countDownloadsPerMonthOfYear(cur, sql_where, year):
+def SQL_countDownloadsPerMonthOfYear(conn, sql_where, year):
+    month_to_C = {}
+    for m in range(1, 13):
+        month = datetime.date(year, m, 1).strftime('%b/%Y')
+        month_to_C[month] = 0
     print('Counting downloads-per-month for "%s" and year %s ...' % \
           (sql_where, year), end=' ')
     sys.stdout.flush()
-    sql = "SELECT month_year, count(*) FROM access_log" \
+    sql = "SELECT month_year, count(*) AS C FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
         + " GROUP BY month_year"
-    cur.execute(sql)
-    month_to_C = {}
-    for m in range(1, 13):
-        month = datetime.date(year, m, 1).strftime('%b/%Y')
-        month_to_C[month] = 0
-    for row in cur:
-        month = row[0]
-        if month in month_to_C.keys():
-            month_to_C[month] = row[1]
+    res = conn.execute(sql).fetchnumpy()
+    keys = res['month_year'].tolist()
+    values = res['C'].tolist()
+    month_to_C |= dict(zip(keys, values))
     print('OK')
     return month_to_C
 
-def SQL_countIPsPerMonth(cur, sql_where):
-    print('Counting distinct IPs-per-month for "%s" ...' % sql_where, end=' ')
-    sys.stdout.flush()
-    sql = "SELECT month_year, count(DISTINCT ips) FROM access_log" \
-        + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
-        + " GROUP BY month_year"
-    cur.execute(sql)
+def SQL_countIPsPerMonth(conn, sql_where):
     month_to_C = {}
     for month in stats_config.lastmonths:
         month_to_C[month] = 0
-    for row in cur:
-        month = row[0]
-        if month in month_to_C.keys():
-            month_to_C[month] = row[1]
+    print('Counting distinct IPs-per-month for "%s" ...' % sql_where, end=' ')
+    sys.stdout.flush()
+    sql = "SELECT month_year, count(DISTINCT ips) AS C FROM access_log" \
+        + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
+        + " GROUP BY month_year"
+    res = conn.execute(sql).fetchnumpy()
+    keys = res['month_year'].tolist()
+    values = res['C'].tolist()
+    month_to_C |= dict(zip(keys, values))
     print('OK')
     return month_to_C
 
-def SQL_countIPsPerMonthOfYear(cur, sql_where, year):
-    print('Counting distinct IPs-per-month for "%s" and year %s ...' % \
-          (sql_where, year), end=' ')
-    sys.stdout.flush()
-    sql = "SELECT month_year, count(DISTINCT ips) FROM access_log" \
-        + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
-        + " GROUP BY month_year"
-    cur.execute(sql)
+def SQL_countIPsPerMonthOfYear(conn, sql_where, year):
     month_to_C = {}
     for m in range(1, 13):
         month = datetime.date(year, m, 1).strftime('%b/%Y')
         month_to_C[month] = 0
-    for row in cur:
-        month = row[0]
-        if month in month_to_C.keys():
-            month_to_C[month] = row[1]
+    print('Counting distinct IPs-per-month for "%s" and year %s ...' % \
+          (sql_where, year), end=' ')
+    sys.stdout.flush()
+    sql = "SELECT month_year, count(DISTINCT ips) AS C FROM access_log" \
+        + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
+        + " GROUP BY month_year"
+    res = conn.execute(sql).fetchnumpy()
+    keys = res['month_year'].tolist()
+    values = res['C'].tolist()
+    month_to_C |= dict(zip(keys, values))
     print('OK')
     return month_to_C
 
-def SQL_countIPs(cur, sql_where):
+def SQL_countIPs(conn, sql_where):
     print('Counting distinct IPs for "%s" ...' % sql_where, end=' ')
     sys.stdout.flush()
     sql = "SELECT count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where)
-    cur.execute(sql)
-    for row in cur:
-        print('OK')
-        return row[0]
+    res = conn.execute(sql).fetchnumpy()
+    print('OK')
+    return list(res.values())[0].tolist()[0]
 
-def SQL_countIPsForYear(cur, sql_where, year):
+def SQL_countIPsForYear(conn, sql_where, year):
     print('Counting distinct IPs for "%s" and year %s ...' % \
           (sql_where, year), end=' ')
     sys.stdout.flush()
     sql = "SELECT count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year)
-    cur.execute(sql)
-    for row in cur:
-        print('OK')
-        return row[0]
+    res = conn.execute(sql).fetchnumpy()
+    print('OK')
+    return list(res.values())[0].tolist()[0]
 
-def SQL_countDownloadsPerIP(cur, sql_where):
+def SQL_countDownloadsPerIP(conn, sql_where):
     print('Counting downloads-per-IP for "%s" ...' % sql_where, end=' ')
     sys.stdout.flush()
-    sql = "SELECT ips, count(*) FROM access_log" \
+    sql = "SELECT ips, count(*) AS C FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
         + " GROUP BY ips"
-    cur.execute(sql)
-    ip_to_C = {}
-    for row in cur:
-        ip_to_C[row[0]] = row[1]
+    res = conn.execute(sql).fetchnumpy()
+    keys = res['ips'].tolist()
+    values = res['C'].tolist()
+    ip_to_C = dict(zip(keys, values))
     print('OK')
     return ip_to_C
 
@@ -341,10 +333,10 @@ def SQL_countDownloadsPerIP(cur, sql_where):
 ### Extract the stats from the DB.
 ###
 
-def extract_stats_for_year(cur, year_stats_filepath, sql_where, year):
-    month_to_C1 = SQL_countIPsPerMonthOfYear(cur, sql_where, year)
-    allmonths_c1 = SQL_countIPsForYear(cur, sql_where, year)
-    month_to_C2 = SQL_countDownloadsPerMonthOfYear(cur, sql_where, year)
+def extract_stats_for_year(conn, year_stats_filepath, sql_where, year):
+    month_to_C1 = SQL_countIPsPerMonthOfYear(conn, sql_where, year)
+    allmonths_c1 = SQL_countIPsForYear(conn, sql_where, year)
+    month_to_C2 = SQL_countDownloadsPerMonthOfYear(conn, sql_where, year)
     out = open(year_stats_filepath, 'w')
     out.write('%s\t%s\t%s\t%s\n' \
               % ("Year", "Month", "Nb_of_distinct_IPs", "Nb_of_downloads"))
@@ -361,29 +353,29 @@ def extract_stats_for_year(cur, year_stats_filepath, sql_where, year):
     out.close()
     return
 
-def extract_biocrepo_stats_for_year(cur, biocrepo, year):
+def extract_biocrepo_stats_for_year(conn, biocrepo, year):
     year_stats_filepath = '%s_%s_stats.tab' % (biocrepo, year)
     sql_where = "biocrepo='%s'" % biocrepo
-    extract_stats_for_year(cur, year_stats_filepath, sql_where, year)
+    extract_stats_for_year(conn, year_stats_filepath, sql_where, year)
     return
 
-def extract_package_stats_for_year(cur, biocrepo, pkg, year):
+def extract_package_stats_for_year(conn, biocrepo, pkg, year):
     year_stats_filepath = '%s_%s_stats.tab' % (pkg, year)
     sql_where = "biocrepo='%s' AND package='%s'" % (biocrepo, pkg)
-    extract_stats_for_year(cur, year_stats_filepath, sql_where, year)
+    extract_stats_for_year(conn, year_stats_filepath, sql_where, year)
     return
 
-def extract_all_stats_for_year(cur, biocrepo, year):
-    extract_biocrepo_stats_for_year(cur, biocrepo, year)
+def extract_all_stats_for_year(conn, biocrepo, year):
+    extract_biocrepo_stats_for_year(conn, biocrepo, year)
     packages_filepath = '%s_packages.txt' % biocrepo
     packages = open(packages_filepath, 'a')
-    pkgs = SQL_getDistinctPackages_for_year(cur, biocrepo, year)
+    pkgs = SQL_getDistinctPackages_for_year(conn, biocrepo, year)
     for pkg in pkgs:
         if not os.path.exists(pkg):
             os.mkdir(pkg)
             packages.write('%s\n' % pkg)
         os.chdir(pkg)
-        extract_package_stats_for_year(cur, biocrepo, pkg, year)
+        extract_package_stats_for_year(conn, biocrepo, pkg, year)
         os.chdir('..')
     packages.close()
     return

@@ -21,8 +21,6 @@ apache2_access_logdirs = [os.path.join('bioc-access-logs', 'apache2', 'krait'), 
 
 s3_access_logdirs = [os.path.join('bioc-access-logs', 's3')]
 
-dbfile = 'pkgdownloads_db.sqlite'
-
 def getLastMonths(n):
     today = datetime.date.today()
     year0 = today.year
