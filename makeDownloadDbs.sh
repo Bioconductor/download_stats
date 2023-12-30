@@ -19,7 +19,8 @@ notify()
 cd $STATS_HOME
 ./makeDownloadDbs.py
 if [ $? -ne 0 ]; then
-	notify maintainer@bioconductor.org
+	#notify maintainer@bioconductor.org
+	notify hpages.on.github@gmail.com
 	exit 2
 fi
 

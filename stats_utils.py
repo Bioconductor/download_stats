@@ -153,7 +153,7 @@ access_log_col2type = {
   'url': 'TEXT NOT NULL',
   'protocol': 'TEXT NOT NULL',
   'statuscode': 'TEXT NOT NULL',
-  'bytes': 'INTEGER NULL',
+  'bytes': 'INT64 NULL',
   'referer': 'TEXT NULL',
   'user_agent': 'TEXT NULL',
   'biocrepo_relurl': 'TEXT NULL',
@@ -185,14 +185,18 @@ def SQL_createAccessLogTable(conn):
     return
 
 def SQL_insertRow(conn, tablename, col2val):
-    cols = ','.join(col2val.keys())
+    cols = []
     vals = []
-    for v in col2val.values():
-        if isinstance(v, str):
-            v = "'%s'" % v
+    for col, val in col2val.items():
+        if val == None:
+            continue
+        if isinstance(val, str):
+            val = "'%s'" % val
         else:
-            v = str(v)
-        vals.append(v)
+            val = str(val)
+        cols.append(col)
+        vals.append(val)
+    cols = ','.join(cols)
     vals = ','.join(vals)
     sql = 'INSERT INTO %s (%s) VALUES (%s)' % (tablename, cols, vals)
     conn.sql(sql)
@@ -214,17 +218,32 @@ def SQL_globalFilter():
     global_filter = date_is_in_range
     return global_filter
 
+def _execute_and_fetch_as_NumPy_arrays(conn, sql):
+    print('execute()', end=' ')
+    sys.stdout.flush()
+    res = conn.execute(sql)
+    print('ok', end=' ')
+    sys.stdout.flush()
+    print('fetchnumpy()', end=' ')
+    sys.stdout.flush()
+    arrays = res.fetchnumpy()  # dict of NumPy Arrays
+    print('ok', end=' ')
+    sys.stdout.flush()
+    return arrays
+
 def SQL_getDistinctPackages(conn, biocrepo='bioc'):
     sql = "SELECT DISTINCT package FROM access_log WHERE biocrepo='%s' AND %s" \
         % (biocrepo, SQL_globalFilter())
-    pkgs = conn.execute(sql).fetchnumpy()['package'].tolist()
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    pkgs = arrays['package'].tolist()
     #pkgs.sort(key=lambda x: x.lower())
     return pkgs
 
 def SQL_getDistinctPackages_for_year(conn, biocrepo, year):
     sql = "SELECT DISTINCT package FROM access_log " + \
           "WHERE biocrepo='%s' AND month_year LIKE '%%/%s'" % (biocrepo, year)
-    pkgs = conn.execute(sql).fetchnumpy()['package'].tolist()
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    pkgs = arrays['package'].tolist()
     #pkgs.sort(key=lambda x: x.lower())
     return pkgs
 
@@ -237,10 +256,10 @@ def SQL_countDownloadsPerMonth(conn, sql_where):
     sql = "SELECT month_year, count(*) AS C FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
         + " GROUP BY month_year"
-    res = conn.execute(sql).fetchnumpy()
-    keys = res['month_year'].tolist()
-    values = res['C'].tolist()
-    month_to_C |= dict(zip(keys, values))
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    keys = arrays['month_year'].tolist()
+    values = arrays['C'].tolist()
+    month_to_C.update(dict(zip(keys, values)))
     print('OK')
     return month_to_C
 
@@ -255,10 +274,10 @@ def SQL_countDownloadsPerMonthOfYear(conn, sql_where, year):
     sql = "SELECT month_year, count(*) AS C FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
         + " GROUP BY month_year"
-    res = conn.execute(sql).fetchnumpy()
-    keys = res['month_year'].tolist()
-    values = res['C'].tolist()
-    month_to_C |= dict(zip(keys, values))
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    keys = arrays['month_year'].tolist()
+    values = arrays['C'].tolist()
+    month_to_C.update(dict(zip(keys, values)))
     print('OK')
     return month_to_C
 
@@ -271,10 +290,10 @@ def SQL_countIPsPerMonth(conn, sql_where):
     sql = "SELECT month_year, count(DISTINCT ips) AS C FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
         + " GROUP BY month_year"
-    res = conn.execute(sql).fetchnumpy()
-    keys = res['month_year'].tolist()
-    values = res['C'].tolist()
-    month_to_C |= dict(zip(keys, values))
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    keys = arrays['month_year'].tolist()
+    values = arrays['C'].tolist()
+    month_to_C.update(dict(zip(keys, values)))
     print('OK')
     return month_to_C
 
@@ -289,10 +308,10 @@ def SQL_countIPsPerMonthOfYear(conn, sql_where, year):
     sql = "SELECT month_year, count(DISTINCT ips) AS C FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year) \
         + " GROUP BY month_year"
-    res = conn.execute(sql).fetchnumpy()
-    keys = res['month_year'].tolist()
-    values = res['C'].tolist()
-    month_to_C |= dict(zip(keys, values))
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    keys = arrays['month_year'].tolist()
+    values = arrays['C'].tolist()
+    month_to_C.update(dict(zip(keys, values)))
     print('OK')
     return month_to_C
 
@@ -301,9 +320,9 @@ def SQL_countIPs(conn, sql_where):
     sys.stdout.flush()
     sql = "SELECT count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where)
-    res = conn.execute(sql).fetchnumpy()
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
     print('OK')
-    return list(res.values())[0].tolist()[0]
+    return list(arrays.values())[0].tolist()[0]
 
 def SQL_countIPsForYear(conn, sql_where, year):
     print('Counting distinct IPs for "%s" and year %s ...' % \
@@ -311,9 +330,8 @@ def SQL_countIPsForYear(conn, sql_where, year):
     sys.stdout.flush()
     sql = "SELECT count(DISTINCT ips) FROM access_log" \
         + " WHERE (%s) AND month_year LIKE '%%/%s'" % (sql_where, year)
-    res = conn.execute(sql).fetchnumpy()
-    print('OK')
-    return list(res.values())[0].tolist()[0]
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    return list(arrays.values())[0].tolist()[0]
 
 def SQL_countDownloadsPerIP(conn, sql_where):
     print('Counting downloads-per-IP for "%s" ...' % sql_where, end=' ')
@@ -321,9 +339,9 @@ def SQL_countDownloadsPerIP(conn, sql_where):
     sql = "SELECT ips, count(*) AS C FROM access_log" \
         + " WHERE (%s) AND (%s)" % (SQL_globalFilter(), sql_where) \
         + " GROUP BY ips"
-    res = conn.execute(sql).fetchnumpy()
-    keys = res['ips'].tolist()
-    values = res['C'].tolist()
+    arrays = _execute_and_fetch_as_NumPy_arrays(conn, sql)
+    keys = arrays['ips'].tolist()
+    values = arrays['C'].tolist()
     ip_to_C = dict(zip(keys, values))
     print('OK')
     return ip_to_C
