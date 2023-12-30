@@ -875,6 +875,17 @@ def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
 ## So old URLs like https://bioconductor.org/packages/stats/bioc/pathview.html
 ## still work.
 def make_redirect_page_from_old_to_new_package_HTML_report(pkg, biocrepo):
+    # Temporary fix: the download logs contain a bogus entry (amongst many
+    # bogus entries) for a package named org.Hs.eg.db.html so at this point
+    # a 'org.Hs.eg.db.html' folder already exists. This prevents us from
+    # creating the redirect page for org.Hs.eg.db, trying to do so fails
+    # with:
+    #  File "/home/biocadmin/download_stats/stats_utils.py", line 869,
+    #  in make_redirect_page_from_old_to_new_package_HTML_report
+    #     out = open(package_page, 'w')
+    #  IsADirectoryError: [Errno 21] Is a directory: 'org.Hs.eg.db.html'
+    if pkg == 'org.Hs.eg.db':
+        return
     package_page = '%s.html' % pkg
     out = open(package_page, 'w')
     biocrepo_subdir = stats_config.biocrepo2subdir[biocrepo]
