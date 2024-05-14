@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 plt.figure(figsize=(9, 5))
 import numpy
 import urllib.request
+import http.client
 
 import stats_config
 
@@ -638,24 +639,30 @@ def write_timestamp_asHTML(out):
     out.write('</P>\n')
     return
 
-def get_url_to_package_home(pkg, biocversion):
-    for biocrepo in ['bioc', 'data/annotation', 'data/experiment', 'workflows']:
-        url = '/packages/%s/%s/html/%s.html' % (biocversion, biocrepo, pkg)
-        try:
-            ## Using plain HTTP to test the URL seems to be slightly faster
-            ## and more reliable than doing it with HTTPS e.g. no
-            ##   ConnectionResetError: [Errno 104] Connection reset by peer
-            ## like happens sometimes with HTTPS.
-            #urllib.request.urlopen('https://bioconductor.org' + url)
-            urllib.request.urlopen('http://bioconductor.org' + url)
-        except urllib.error.HTTPError:
-            continue
-        return url
-    return None
+def get_url_to_package_home(pkg, biocrepo, biocversion):
+    if biocrepo in ['annotation', 'experiment']:
+        biocrepo = 'data/' + biocrepo
+    url = '/packages/%s/%s/html/%s.html' % (biocversion, biocrepo, pkg)
+    try:
+        ## Using plain HTTP to test the URL seems to be slightly faster
+        ## and more reliable than doing it with HTTPS e.g. no
+        ##   ConnectionResetError: [Errno 104] Connection reset by peer
+        ## like happens sometimes with HTTPS.
+        #urllib.request.urlopen('https://bioconductor.org' + url)
+        urllib.request.urlopen('http://bioconductor.org' + url)
+    except urllib.error.HTTPError:
+        return None
+    except http.client.RemoteDisconnected:
+        pass
+    except urllib.error.URLError:
+        pass
+    return url
 
-def write_links_to_package_home(out, pkg):
-    url1 = get_url_to_package_home(pkg, "release")
-    url2 = get_url_to_package_home(pkg, "devel")
+def write_links_to_package_home(out, pkg, biocrepo):
+    print('write_links_to_package_home()', end= ' ')
+    sys.stdout.flush()
+    url1 = get_url_to_package_home(pkg, biocrepo, "release")
+    url2 = get_url_to_package_home(pkg, biocrepo, "devel")
     out.write('<P style="text-align: center;">')
     if url1 == None and url2 == None:
         out.write('Note that <B>%s</B> doesn\'t belong to the ' % pkg)
@@ -670,6 +677,8 @@ def write_links_to_package_home(out, pkg):
             out.write(', ')
         out.write('<A HREF="%s">devel version</A>' % url2)
     out.write('.</P>\n')
+    print('ok', end= ' ')
+    sys.stdout.flush()
     return
 
 def plot_yticks_and_labels(nb_pow10ticks):
@@ -775,6 +784,8 @@ def write_HTML_stats_for_year(out, pkg, year):
     year_stats_filepath = '%s_%s_stats.tab' % (pkg, year)
     if not os.path.exists(year_stats_filepath):
         return
+    print('write_HTML_stats_for_year(..., year=%s)' % year, end=' ')
+    sys.stdout.flush()
     out.write('<H2 style="text-align: center;">%s</H2>\n' % year)
     year_stats = open(year_stats_filepath, 'r')
     months = []
@@ -831,6 +842,8 @@ def write_HTML_stats_for_year(out, pkg, year):
     out.write('</TD>')
     out.write('</TR></TABLE>\n')
     #out.write('</P>\n')
+    print('ok', end=' ')
+    sys.stdout.flush()
     return
 
 def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
@@ -846,7 +859,7 @@ def make_package_HTML_report(pkg, biocrepo, from_year, to_year,
     write_goback_asHTML(out, index_page_href, index_page_title)
     out.write('<H1 style="text-align: center;">%s</H1>\n' % title)
     write_timestamp_asHTML(out)
-    write_links_to_package_home(out, pkg)
+    write_links_to_package_home(out, pkg, biocrepo)
     out.write('<P style="text-align: center">')
     out.write('Number of downloads ')
     out.write('for %s package %s, ' % (biocrepo_label, pkg))
@@ -880,7 +893,7 @@ def make_redirect_page_from_old_to_new_package_HTML_report(pkg, biocrepo):
     # a 'org.Hs.eg.db.html' folder already exists. This prevents us from
     # creating the redirect page for org.Hs.eg.db, trying to do so fails
     # with:
-    #  File "/home/biocadmin/download_stats/stats_utils.py", line 869,
+    #  File "/home/hpages/download_stats/stats_utils.py", line 869,
     #  in make_redirect_page_from_old_to_new_package_HTML_report
     #     out = open(package_page, 'w')
     #  IsADirectoryError: [Errno 21] Is a directory: 'org.Hs.eg.db.html'

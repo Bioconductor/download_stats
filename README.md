@@ -2,21 +2,21 @@
 
 Scripts used for generating the package download stats displayed at https://bioconductor.org/packages/stats/
 
-These scripts are currently installed and running on stats.bioconductor.org
+These scripts are currently installed and running on nebbiolo2.
 
 
 ===============================================================================
 Installation
 ===============================================================================
 
-1. Install Python module boto
------------------------------
+1. Install Python modules duckdb and boto
+-----------------------------------------
 
   - On Ubuntu:
 
       sudo apt-get install python-pip
       sudo pip install --upgrade pip
-      sudo pip install -U boto
+      sudo pip install -U duckdb boto
 
 2. Install Python module matplotlib
 -----------------------------------
@@ -34,32 +34,37 @@ Installation
       e. sudo python setup.py install
       f. Test by starting python and trying: import pylab
 
-3. Add the following lines to the crontab for biocadmin@stats.bioconductor.org
-------------------------------------------------------------------------------
+3. Add the following lines to the crontab for hpages@nebbiolo2
+--------------------------------------------------------------
 
-# Make the SQLite DBs for the download stats (Monday and Thursday each week)
-# --------------------------------------------------------------------------
-55 04 * * 1,4 cd /home/biocadmin/STATS && (./rsync_all_logs2.sh && ./get_s3_logs.sh) >>/home/biocadmin/cron.log/stats/get_logs.log 2>&1
-55 11 * * 1,4 cd /home/biocadmin/STATS && ./makeDownloadDbs.sh >>/home/biocadmin/cron.log/stats/makeDownloadDbs.log 2>&1
+# Sunday afternoon: Get the latest logs from S3
+# ---------------------------------------------
+#55 15 * * 0 cd /home/hpages/STATS && ./rsync_all_logs2.sh >>/home/hpages/cron.log/stats/rsync_all_logs2.log 2>&1
+00 16 * * 0 cd /home/hpages/STATS && ./get_s3_logs.sh >>/home/hpages/cron.log/stats/get_s3_logs-`date +\%Y\%m\%d`.log 2>&1
 
-# Download stats for software packages (Tuesday and Friday each week)
-# -------------------------------------------------------------------
-55 05 * * 2,5 cd /home/biocadmin/STATS && ./extractDownloadStats-for-bioc.sh >>/home/biocadmin/cron.log/stats/extractDownloadStats-for-bioc.log 2>&1
-55 07 * * 2,5 cd /home/biocadmin/STATS && ./makeDownloadStatsHTML-for-bioc.sh >>/home/biocadmin/cron.log/stats/makeDownloadStatsHTML-for-bioc.log 2>&1
+# Sunday evening: Import logs in duckdb DBs
+# -----------------------------------------
+00 20 * * 0 cd /home/hpages/STATS && ./makeDownloadDbs.sh >>/home/hpages/cron.log/stats/makeDownloadDbs-`date +\%Y\%m\%d`.log 2>&1
 
-# Download stats for annotation packages (Tuesday and Friday each week)
-# ---------------------------------------------------------------------
-55 09 * * 2,5 cd /home/biocadmin/STATS && ./extractDownloadStats-for-data-annotation.sh >>/home/biocadmin/cron.log/stats/extractDownloadStats-for-data-annotation.log 2>&1
-55 11 * * 2,5 cd /home/biocadmin/STATS && ./makeDownloadStatsHTML-for-data-annotation.sh >>/home/biocadmin/cron.log/stats/makeDownloadStatsHTML-for-data-annotation.log 2>&1
+# Monday: Make download stats for software packages
+# -------------------------------------------------
+07 09 * * 1 cd /home/hpages/STATS && (./extractDownloadStats-for-bioc.sh >>/home/hpages/cron.log/stats/extractDownloadStats-for-bioc-`date +\%Y\%m\%d`.log 2>&1) && (./makeDownloadStatsHTML-for-bioc.sh >>/home/hpages/cron.log/stats/makeDownloadStatsHTML-for-bioc-`date +\%Y\%m\%d`.log 2>&1)
 
-# Download stats for experiment packages (Tuesday and Friday each week)
-# ---------------------------------------------------------------------
-55 13 * * 2,5 cd /home/biocadmin/STATS && ./extractDownloadStats-for-data-experiment.sh >>/home/biocadmin/cron.log/stats/extractDownloadStats-for-data-experiment.log 2>&1
-55 15 * * 2,5 cd /home/biocadmin/STATS && ./makeDownloadStatsHTML-for-data-experiment.sh >>/home/biocadmin/cron.log/stats/makeDownloadStatsHTML-for-data-experiment.log 2>&1
+# Tuesday: Make download stats for annotation packages
+# ----------------------------------------------------
+00 13 * * 2 cd /home/hpages/STATS && (./extractDownloadStats-for-data-annotation.sh >>/home/hpages/cron.log/stats/extractDownloadStats-for-data-annotation-`date +\%Y\%m\%d`.log 2>&1) && (./makeDownloadStatsHTML-for-data-annotation.sh >>/home/hpages/cron.log/stats/makeDownloadStatsHTML-for-data-annotation-`date +\%Y\%m\%d`.log 2>&1)
+
+# Wednesday: Make download stats for experiment packages
+# ------------------------------------------------------
+00 12 * * 3 cd /home/hpages/STATS && (./extractDownloadStats-for-data-experiment.sh >>/home/hpages/cron.log/stats/extractDownloadStats-for-data-experiment-`date +\%Y\%m\%d`.log 2>&1) && (./makeDownloadStatsHTML-for-data-experiment.sh >>/home/hpages/cron.log/stats/makeDownloadStatsHTML-for-data-experiment-`date +\%Y\%m\%d`.log 2>&1)
+
+# Thursday: Make download stats for workflow packages
+# ---------------------------------------------------
+00 11 * * 4 cd /home/hpages/STATS && (./extractDownloadStats-for-workflows.sh >>/home/hpages/cron.log/stats/extractDownloadStats-for-workflows-`date +\%Y\%m\%d`.log 2>&1) && (./makeDownloadStatsHTML-for-workflows.sh >>/home/hpages/cron.log/stats/makeDownloadStatsHTML-for-workflows-`date +\%Y\%m\%d`.log 2>&1)
 
 This will update the online reports at:
 
-  https://bioconductor.org/packages/stats/
+  https://bioconductor.org/packages/oldstats/
 
-every Tuesday and Friday morning.
+once a week.
 

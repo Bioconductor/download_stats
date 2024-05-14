@@ -7,9 +7,9 @@ import datetime
 import stats_config
 import stats_utils
 
-html_stats_home = '/home/biocadmin/public_html/stats'
+html_stats_home = '/home/hpages/public_html/stats'
 biocrepo = 'experiment'
-from_year = 2009
+from_year = 2014
 to_year = datetime.date.today().year  # current year
 
 biocrepo_subdir = stats_config.biocrepo2subdir[biocrepo]

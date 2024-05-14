@@ -595,6 +595,6 @@ def makeDownloadDbForYear(year, force=False):
     makeDownloadDb(dbfile_path, trashfile_path, from_date, to_date)
 
 current_year = datetime.date.today().year
-for year in range(2009, current_year + 1):
+for year in range(2014, current_year + 1):
     makeDownloadDbForYear(year, year == current_year)
 
