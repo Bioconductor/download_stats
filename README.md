@@ -9,14 +9,15 @@ These scripts are currently installed and running on nebbiolo2.
 Installation
 ===============================================================================
 
-1. Install Python modules duckdb and boto
------------------------------------------
+1. Install Python modules duckdb and boto3
+------------------------------------------
 
   - On Ubuntu:
 
-      sudo apt-get install python-pip
-      sudo pip install --upgrade pip
-      sudo pip install -U duckdb boto
+      sudo apt-get install python3-boto3
+      ## No python3-duckdb yet in Ubuntu 24.04 so use pip to install duckdb:
+      sudo apt-get install python3-pip3
+      pip3 install -U duckdb
 
 2. Install Python module matplotlib
 -----------------------------------
