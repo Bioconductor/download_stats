@@ -3,7 +3,7 @@
 
 set -e  # Exit immediately if a simple command exits with a non-zero status
 
-STATS_HOME=/home/biocadmin/STATS
+STATS_HOME=/home/biocstats/STATS
 
 cd $STATS_HOME
 rsync -ave ssh webadmin@cobra:'/extra/Backup/log/squid/access.log*' $STATS_HOME/bioc-access-logs/squid/cobra

@@ -7,7 +7,7 @@ import datetime
 import stats_config
 import stats_utils
 
-html_stats_home = '/home/hpages/public_html/stats'
+html_stats_home = '/home/biocstats/public_html/stats'
 biocrepo = 'experiment'
 from_year = 2014
 to_year = datetime.date.today().year  # current year
