@@ -34,28 +34,28 @@ Installation
       e. sudo python setup.py install
       f. Test by starting python and trying: import pylab
 
-3. Add the following lines to the crontab for biocadmin@stats.bioconductor.org
+3. Add the following lines to the crontab for biocstats@stats.bioconductor.org
 ------------------------------------------------------------------------------
 
 # Make the SQLite DBs for the download stats (Monday and Thursday each week)
 # --------------------------------------------------------------------------
-55 04 * * 1,4 cd /home/biocadmin/STATS && (./rsync_all_logs2.sh && ./get_s3_logs.sh) >>/home/biocadmin/cron.log/stats/get_logs.log 2>&1
-55 11 * * 1,4 cd /home/biocadmin/STATS && ./makeDownloadDbs.sh >>/home/biocadmin/cron.log/stats/makeDownloadDbs.log 2>&1
+55 04 * * 1,4 cd /home/biocstats/STATS && (./rsync_all_logs2.sh && ./get_s3_logs.sh) >>/home/biocstats/cron.log/get_logs.log 2>&1
+55 11 * * 1,4 cd /home/biocstats/STATS && ./makeDownloadDbs.sh >>/home/biocstats/cron.log/makeDownloadDbs.log 2>&1
 
 # Download stats for software packages (Tuesday and Friday each week)
 # -------------------------------------------------------------------
-55 05 * * 2,5 cd /home/biocadmin/STATS && ./extractDownloadStats-for-bioc.sh >>/home/biocadmin/cron.log/stats/extractDownloadStats-for-bioc.log 2>&1
-55 07 * * 2,5 cd /home/biocadmin/STATS && ./makeDownloadStatsHTML-for-bioc.sh >>/home/biocadmin/cron.log/stats/makeDownloadStatsHTML-for-bioc.log 2>&1
+55 05 * * 2,5 cd /home/biocstats/STATS && ./extractDownloadStats-for-bioc.sh >>/home/biocstats/cron.log/extractDownloadStats-for-bioc.log 2>&1
+55 07 * * 2,5 cd /home/biocstats/STATS && ./makeDownloadStatsHTML-for-bioc.sh >>/home/biocstats/cron.log/makeDownloadStatsHTML-for-bioc.log 2>&1
 
 # Download stats for annotation packages (Tuesday and Friday each week)
 # ---------------------------------------------------------------------
-55 09 * * 2,5 cd /home/biocadmin/STATS && ./extractDownloadStats-for-data-annotation.sh >>/home/biocadmin/cron.log/stats/extractDownloadStats-for-data-annotation.log 2>&1
-55 11 * * 2,5 cd /home/biocadmin/STATS && ./makeDownloadStatsHTML-for-data-annotation.sh >>/home/biocadmin/cron.log/stats/makeDownloadStatsHTML-for-data-annotation.log 2>&1
+55 09 * * 2,5 cd /home/biocstats/STATS && ./extractDownloadStats-for-data-annotation.sh >>/home/biocstats/cron.log/extractDownloadStats-for-data-annotation.log 2>&1
+55 11 * * 2,5 cd /home/biocstats/STATS && ./makeDownloadStatsHTML-for-data-annotation.sh >>/home/biocstats/cron.log/makeDownloadStatsHTML-for-data-annotation.log 2>&1
 
 # Download stats for experiment packages (Tuesday and Friday each week)
 # ---------------------------------------------------------------------
-55 13 * * 2,5 cd /home/biocadmin/STATS && ./extractDownloadStats-for-data-experiment.sh >>/home/biocadmin/cron.log/stats/extractDownloadStats-for-data-experiment.log 2>&1
-55 15 * * 2,5 cd /home/biocadmin/STATS && ./makeDownloadStatsHTML-for-data-experiment.sh >>/home/biocadmin/cron.log/stats/makeDownloadStatsHTML-for-data-experiment.log 2>&1
+55 13 * * 2,5 cd /home/biocstats/STATS && ./extractDownloadStats-for-data-experiment.sh >>/home/biocstats/cron.log/extractDownloadStats-for-data-experiment.log 2>&1
+55 15 * * 2,5 cd /home/biocstats/STATS && ./makeDownloadStatsHTML-for-data-experiment.sh >>/home/biocstats/cron.log/makeDownloadStatsHTML-for-data-experiment.log 2>&1
 
 This will update the online reports at:
 

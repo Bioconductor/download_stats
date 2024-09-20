@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 
-STATS_HOME=/home/biocadmin/STATS
-HTML_STATS_HOME=/home/biocadmin/public_html/stats
+STATS_HOME=/home/biocstats/STATS
+HTML_STATS_HOME=/home/biocstats/public_html/stats
 
 notify()
 {
 	addr="$1"
 	stats_script="$0"
-	stats_logdir="~biocadmin/cron.log/stats/"
+	stats_logdir="~biocstats/cron.log/"
 	stats_host="stats.bioconductor.org"
 	subject="Download stats problem: $stats_script returned an error!"
 	msg1="Check the logs in $stats_logdir at $stats_host for the details."

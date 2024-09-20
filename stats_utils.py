@@ -870,7 +870,7 @@ def make_redirect_page_from_old_to_new_package_HTML_report(pkg, biocrepo):
     # a 'org.Hs.eg.db.html' folder already exists. This prevents us from
     # creating the redirect page for org.Hs.eg.db, trying to do so fails
     # with:
-    #  File "/home/biocadmin/download_stats/stats_utils.py", line 869,
+    #  File "/home/biocstats/download_stats/stats_utils.py", line 869,
     #  in make_redirect_page_from_old_to_new_package_HTML_report
     #     out = open(package_page, 'w')
     #  IsADirectoryError: [Errno 21] Is a directory: 'org.Hs.eg.db.html'
