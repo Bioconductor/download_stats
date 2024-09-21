@@ -36,7 +36,7 @@ known_bots = [
 
 unquoted_field_regex = '[^ ]*'
 squid_ips_field_regex = '%s(, %s)*' % (unquoted_field_regex, unquoted_field_regex)
-apache_time_field_regex = '\[([^]]*)\]'
+apache_time_field_regex = '\\[([^]]*)\\]'
 quoted_field_regex = '"((\\\\"|[^"])*)"'
 squid_request_field_regex = '"([^"]+ ([^ ])+ [^ ]+)"'
 blank = '\\b|\\S+'
@@ -45,7 +45,7 @@ leftover = '.*'
 s3_date_field_regex = '[0-9]{4}-[0-9]{2}-[0-9]{2}'
 s3_time_field_regex = '[0-9]{2}:[0-9]{2}:[0-9]{2}' # Note this time is in GMT, unlike 
                                                    # squid and apache times
-s3_unquoted_field = '\S+'
+s3_unquoted_field = '\\S+'
 
 apache_fields = (
     squid_ips_field_regex,      # ips
