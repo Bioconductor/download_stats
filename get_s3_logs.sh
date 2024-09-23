@@ -8,7 +8,7 @@ notify()
 	addr="$1"
 	stats_script="$0"
 	stats_logdir="~biocstats/cron.log/"
-	stats_host="nebbiolo2"
+	stats_host="biocstats"
 	subject="Download stats problem: $stats_script returned an error!"
 	msg1="Check the logs in $stats_logdir at $stats_host for the details."
 	msg2="Please do NOT reply."

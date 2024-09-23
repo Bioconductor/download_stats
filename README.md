@@ -2,7 +2,7 @@
 
 Scripts used for generating the package download stats displayed at https://bioconductor.org/packages/stats/
 
-These scripts are currently installed and running on nebbiolo2.
+These scripts are currently installed and running on biocstats (Linux VM on Jetstream2).
 
 
 ===============================================================================
