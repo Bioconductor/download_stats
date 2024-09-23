@@ -242,7 +242,7 @@ def get_protocol(m, lineno, s3, lineobj=None):
     return REQUEST_parts.group(3)
 
 ### Split the URL subfield
-PKGPATH_regex = '/(src/contrib|bin/.*/contrib/[^/]*)/([^/_]*)_([^/_]*)\.(tar\.gz|zip|tgz)$'
+PKGPATH_regex = '/(src/contrib|bin/.*/contrib/[^/]*)/([^/_]*)_([^/_]*)\\.(tar\\.gz|zip|tgz)$'
 SQUID_URL_regex = '.*bioconductor.org(.*)' + PKGPATH_regex
 SQUID_URL_compiled_regex = re.compile(SQUID_URL_regex)
 APACHE2_URL_regex = '(/.*)' + PKGPATH_regex
