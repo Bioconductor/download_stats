@@ -48,29 +48,29 @@ However, there's no `python3-duckdb` yet in Ubuntu 24.04 (as of September
   You can check that the module is effectively installed and loadable
   by trying `import <module>` in an interactive Python3 session.
 
-### Install Python module matplotlib
-
-- On Ubuntu:
-    ```
-    apt-get install python-matplotlib
-    ```
-
-- From source:
-
-  - Get the source tarball from http://matplotlib.sourceforge.net/
-  - Extract
-  - `cd matplotlib-x.y.z`
-  - `python setup.py build`
-  - `sudo python setup.py install`
-  - Test by starting python and trying: `import pylab`
-
 ### Clone the download_stats repo
 
     git clone https://github.com/Bioconductor/download_stats
 
 Then create `STATS` symlink in `biocstats`'s home:
 
+    cd
     ln -s /path/to/download_stats STATS
+
+### Create folders bioc-access-logs/, download_dbs/, public_html/stats/, and cron.log/
+
+Create `bioc-access-logs/` and `download_dbs/` in `STATS`:
+
+    cd ~/STATS
+    mkdir bioc-access-logs download_dbs
+    cd bioc-access-logs
+    mkdir apache2 s3 squid
+
+Create `public_html/stats/` and `cron.log/` in `biocstats`'s home:
+
+    cd
+    mkdir -p public_html/stats
+    mkdir cron.log
 
 ### Add the following lines to the crontab for biocstats@biocstats
 
