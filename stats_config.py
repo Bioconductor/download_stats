@@ -1,6 +1,9 @@
 import os
 import datetime
 
+href = 'https://github.com/Bioconductor/download_stats/'
+powered_by = '<A HREF="%s">%s</A>' % (href, href)
+
 biocrepo2label = { \
     'bioc': "software", \
     'annotation': "annotation", \
