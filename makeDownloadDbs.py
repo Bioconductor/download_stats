@@ -41,6 +41,9 @@ quoted_field_regex = '"((\\\\"|[^"])*)"'
 squid_request_field_regex = '"([^"]+ ([^ ])+ [^ ]+)"'
 blank = '\\b|\\S+'
 leftover = '.*'
+# Source: https://github.com/r-lib/pkgdepends/blob/7ccc7da0ca6c686c70a4d30eb09db887c5a0df6f/R/parse-remotes.R#L16
+package_name_compiled_regex = re.compile('[a-zA-Z][a-zA-Z0-9.]*[a-zA-Z0-9]')
+package_version_compiled_regex = re.compile(r'([0-9]+[.-]){1,}[0-9]+')
 
 s3_date_field_regex = '[0-9]{4}-[0-9]{2}-[0-9]{2}'
 s3_time_field_regex = '[0-9]{2}:[0-9]{2}:[0-9]{2}' # Note this time is in GMT, unlike 
@@ -292,13 +295,16 @@ def get_package(m, lineno, s3, lineobj=None):
     val = URL_parts.group(3)
     if val == '':
         raise BadInputLine("EMPTY_PACKAGE_NAME")
-    if val.find('%') >= 0:
+    if not package_name_compiled_regex.fullmatch(val):
         raise BadInputLine("INVALID_PACKAGE_NAME")
     return val
 
 def get_pkgversion(m, lineno, s3, lineobj=None):
     URL_parts = _get_URL_parts(m, lineno, s3, lineobj)
-    return URL_parts.group(4)
+    val = URL_parts.group(4)
+    if not package_version_compiled_regex.fullmatch(val):
+        raise BadInputLine("INVALID_PACKAGE_VERSION")
+    return val
 
 def get_pkgtype(m, lineno, s3, lineobj=None):
     URL_parts = _get_URL_parts(m, lineno, s3)
