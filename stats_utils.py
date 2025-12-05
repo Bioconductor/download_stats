@@ -191,17 +191,13 @@ def SQL_insertRow(conn, tablename, col2val):
     for col, val in col2val.items():
         if val == None:
             continue
-        if isinstance(val, str):
-            val = "'%s'" % val
-        else:
-            val = str(val)
         cols.append(col)
         vals.append(val)
     cols = ','.join(cols)
-    vals = ','.join(vals)
-    sql = 'INSERT INTO %s (%s) VALUES (%s)' % (tablename, cols, vals)
-    conn.sql(sql)
-    return sql
+    placeholders = ','.join(['?'] * len(vals))
+    sql = 'INSERT INTO %s (%s) VALUES (%s)' % (tablename, cols, placeholders)
+    conn.execute(sql, vals)
+    return
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Querying the DB.
