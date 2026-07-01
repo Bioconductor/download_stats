@@ -1,6 +1,6 @@
 # download_stats
 
-IMPORTANT NOTE: This repository contains the old code for producing the _Bioconductor package download stats_. **The new code is in the [bio-web-stats](https://github.com/Bioconductor/bio-web-stats) repository.**
+IMPORTANT NOTE: This repository contains the **old code** for producing the _Bioconductor package download stats_. **The new code is in the [bio-web-stats](https://github.com/Bioconductor/bio-web-stats) repository.**
 
 This repository contains the code used for producing the _Bioconductor package download stats_ that are displayed at https://bioconductor.org/packages/oldstats/
 Note that this code is still occasionally running on a Jetstream2 VM (m3.quad Linux instance named `biocstats`).
